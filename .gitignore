@@ -6,8 +6,7 @@ dist/
 *.tsbuildinfo
 
 # Runtime data: database, backups, logs, crash reports (never hand-edited)
-data/*
-!data/README.md
+data/
 
 # Secrets
 .env

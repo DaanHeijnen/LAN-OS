@@ -1,0 +1,56 @@
+# Decisions
+
+Locked decisions for LAN OS. Don't re-ask these; change them only on the owner's request.
+
+## Product
+
+- **Purpose:** show who is playing what and for how long (including who is playing nothing), run LAN Radio (Spotify), and build history and stats across LAN weekends.
+- **Players:** about 7, preconfigured in `config/players.yaml`. Each gets a personal join link and signs in with Steam (OpenID). Sessions restore automatically; an optional 4-digit PIN protects returning on a new browser.
+- **Admins:** several trusted players, with `role: admin` in `players.yaml`, plus an admin password in `.env`. There is a separate admin page and an admin tab in the player app.
+- **Network:** LAN only, with no remote access. Local features work without internet. Steam, Spotify, Discord and AI degrade gracefully.
+- **Next LAN:** 19 Nov 2026 19:00 to 22 Nov 2026 15:00, Europe/Amsterdam. It is set in `config/event.yaml` and never hardcoded.
+- **Host:** Windows 10/11 only for now.
+
+## Wall and dashboards
+
+- "Looking for players" is a status on the player card, not a separate board.
+- A countdown appears only for a scheduled poll or activity. There is no standalone countdown.
+- There is no sound from the projector. Optional sound cues play on player dashboards only.
+- The projector runs 24/7. Admins can dim it, blank it, pause it and toggle night mode.
+- Admins can push a plain-text projector message. There is no styled announcement builder.
+- The clock shows "Day X" and the hours remaining.
+- When everyone is in the same game, the wall shows one short, large announcement and nothing more.
+- Players can override their detected game or add a non-Steam game.
+
+## Humour
+
+- Lines are short and factual-sounding, based on real activity. There is no persona or announcer character.
+- Manual night mode switches announcements to a playful drinking-game tone.
+- Admins can turn humour off (`announcements.yaml → humour`).
+
+## Music and activities
+
+- Music requests are unlimited per player and ordered by DJ rotation (round-robin between requesters).
+- An activity starts at its scheduled time or when the organizer presses Start, whichever comes first.
+
+## Join game
+
+- When Steam's `GetPlayerSummaries` exposes a lobby (`lobbysteamid`) or a server (`gameserverip`) for a friend, show "Join game". It links to `steam://joinlobby/<appid>/<lobbyid>/<steamid64>` or `steam://connect/<ip:port>`.
+- Otherwise show "Steam ↗", which opens `steam://url/SteamIDPage/<steamid64>`.
+- **Checked against the docs (Oct 2026):** `personastate` (0 offline, 1 online, 2 busy, 3 away, 4 snooze, 5 looking to trade, 6 looking to play), `gameid`, `gameextrainfo` and `gameserverip` are documented. `"0.0.0.0:0"` means "no server". `lobbysteamid` is not in Valve's public docs, although Steam returns it for joinable lobbies. LAN OS treats it as optional, so a missing value safely falls back to "Steam ↗".
+
+## Presence rules (implementation)
+
+- Steam Away or Snooze shows **Away**, even while in a game. The game name stays visible and its session keeps running.
+- A manual game override applies only while the player is online.
+- When Steam can't be reached, the status shows **Unknown** with the time of the last update. Running sessions are not ended.
+- Session time is measured from the moment LAN OS first sees a game, not from Steam's own data.
+- Hide-from-wall is stored in `players.yaml → hidden_from_wall`, so the admin page, the player toggle and hand edits share one source.
+
+## Technical
+
+- **Stack (locked):** Node.js 22 LTS, strict TypeScript, npm workspaces, Fastify with one WebSocket channel, SQLite via better-sqlite3 with plain SQL migrations, React + Vite (`/wall`, `/app`, `/admin`), zod, `yaml` (Document API) and Vitest.
+- **No build step on the server:** Node 22 runs the TypeScript files directly (type stripping), so source files use only erasable TypeScript syntax and import with `.ts` extensions.
+- **Times:** stored in UTC (ISO 8601) in the database. Config files use local `"YYYY-MM-DD HH:MM"` in the event timezone.
+- **Demo mode** uses its own database file, so demo data never mixes with real history.
+- **UI:** Aurora design system first; gaps go in `docs/aurora-gaps.md`.
