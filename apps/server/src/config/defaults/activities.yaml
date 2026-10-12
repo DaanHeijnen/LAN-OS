@@ -1,0 +1,15 @@
+# LAN OS activities: group plans like a pizza break or a game together. (Activities arrive in Milestone 3.)
+
+# Kinds of activity players can propose. Remove a word to turn that kind off.
+# Allowed: game, group_session, food_break, irl (each once). Default: [game, group_session, food_break, irl]
+types: [game, group_session, food_break, irl]
+
+# Fewest players an activity needs, when the creator doesn't choose. A whole number from 1 to 32. Default: 2
+default_min_players: 2
+
+# Most players an activity allows, when the creator and the game don't say. A whole number from 1 to 32. Default: 7
+default_max_players: 7
+
+# How long before an activity starts the wall countdown and the dashboard reminder appear.
+# A time from "1m" to "1h". Default: "10m"
+reminder_lead_time: "10m"

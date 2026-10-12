@@ -1,0 +1,12 @@
+# LAN OS projector wall. What the big screen shows.
+# Admins can also change these from the admin page; the change is written back here.
+
+# Panels on the right side of the wall, top to bottom. Remove a word to hide that panel.
+# Allowed: music, poll, activity (each once). Default: [music, poll, activity]
+panels: [music, poll, activity]
+
+# Night mode: a dimmer, warmer wall and playful drinking-game announcements. true or false. Default: false
+night_mode: false
+
+# Brightness of the wall in percent. 100 is full brightness. Allowed: 20 to 100. Default: 100
+brightness: 100

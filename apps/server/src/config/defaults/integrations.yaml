@@ -1,0 +1,18 @@
+# LAN OS integrations: the outside services LAN OS talks to.
+# Keys and passwords for these never go here. They go in the .env file (see .env.example).
+# When a service is off or unreachable, LAN OS keeps working and shows a warning dot.
+
+# Read who is playing what from Steam. true or false. Default: true
+steam_enabled: true
+
+# How often LAN OS asks Steam for everyone's status. A time from "10s" to "5m". Default: "15s"
+steam_poll_interval: "15s"
+
+# LAN Radio through Spotify (Milestone 2). true or false. Default: false
+spotify_enabled: false
+
+# Discord highlight preview on the wall (a later milestone). true or false. Default: false
+discord_enabled: false
+
+# AI-written announcement lines (a later milestone). Without it, LAN OS uses template lines. true or false. Default: false
+ai_enabled: false

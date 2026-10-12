@@ -1,0 +1,49 @@
+# LAN OS players. Everyone who can join, and who is an admin.
+# You can edit this file by hand or from the admin page ("People & access"). Both keep these comments.
+#
+# Each player is a block that starts with "- id:". Every player has these settings:
+#   id                short code that never changes, even if the nickname does. Lowercase letters, numbers and dashes. Must be unique.
+#   nickname          name shown on the wall and dashboards. Up to 20 characters.
+#   steam_id          the player's 17-digit Steam ID between quotes, like "76561198012345678".
+#                     Leave it as "" and LAN OS fills it in the first time the player signs in with Steam.
+#   role              player = normal access, admin = can also open the admin page. Default: player
+#   hidden_from_wall  true = the projector shows a hidden placeholder instead of this player's game. Default: false
+#                     Players can switch this themselves on their dashboard.
+
+# The roster. Add, remove or change players here. Up to 32 players.
+players:
+  - id: mara
+    nickname: Mara
+    steam_id: ""
+    role: admin
+    hidden_from_wall: false
+  - id: joris
+    nickname: Joris
+    steam_id: ""
+    role: player
+    hidden_from_wall: false
+  - id: sam
+    nickname: Sam
+    steam_id: ""
+    role: player
+    hidden_from_wall: false
+  - id: nick
+    nickname: Nick
+    steam_id: ""
+    role: player
+    hidden_from_wall: false
+  - id: alex
+    nickname: Alex
+    steam_id: ""
+    role: admin
+    hidden_from_wall: false
+  - id: lisa
+    nickname: Lisa
+    steam_id: ""
+    role: player
+    hidden_from_wall: false
+  - id: tom
+    nickname: Tom
+    steam_id: ""
+    role: player
+    hidden_from_wall: false

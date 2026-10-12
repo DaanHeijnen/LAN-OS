@@ -1,0 +1,10 @@
+# LAN OS voting: quick polls like "Next break?". (Polls arrive in Milestone 3.)
+
+# How long a poll stays open when its creator doesn't choose. A time from "1m" to "2h". Default: "10m"
+default_poll_timer: "10m"
+
+# How long after voting a player can still change their vote. A time from "0s" to "10m". "0s" means no changes. Default: "1m"
+change_vote_window: "1m"
+
+# How many smaller side polls may run next to the main poll. A whole number from 0 to 5. Default: 2
+max_side_polls: 2

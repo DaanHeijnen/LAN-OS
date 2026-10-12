@@ -1,0 +1,14 @@
+# LAN OS server: how the host PC runs LAN OS.
+# Changes to port and hostname take effect after you restart LAN OS. The rest updates by itself.
+
+# Network port LAN OS listens on. Other PCs open http://<host-pc>:<port>. A whole number from 1024 to 65535. Default: 8080
+port: 8080
+
+# Friendly local name for the host PC, used in the links LAN OS prints and in join links. Default: "lan-os.local"
+hostname: "lan-os.local"
+
+# How often LAN OS saves a backup copy of its database during the LAN. A time from "15m" to "24h". Default: "2h"
+backup_interval: "2h"
+
+# How long log files and crash reports are kept before they are deleted. A time from "1d" to "365d". Default: "30d"
+log_retention: "30d"

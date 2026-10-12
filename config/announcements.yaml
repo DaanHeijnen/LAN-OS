@@ -1,0 +1,31 @@
+# LAN OS announcements: short lines on the wall about what is happening. (Announcements arrive in Milestone 4.)
+# The plain-text message an admin sends from the admin page is not affected by these settings.
+
+# Funny, factual-sounding lines based on real activity. false = only plain facts. true or false. Default: true
+humour: true
+
+# Shortest time between two automatic announcements. A time from "5m" to "2h". Default: "15m"
+min_gap: "15m"
+
+# Average time between automatic announcements. A time from "15m" to "4h". Default: "1h"
+average_gap: "1h"
+
+# Announce when someone has been in one game for a long time. true or false. Default: true
+trigger_long_session: true
+
+# How long a session must last before it counts as long. A time from "1h" to "12h". Default: "3h"
+long_session_after: "3h"
+
+# Announce the result when a poll closes. true or false. Default: true
+trigger_poll_closed: true
+
+# Announce when everyone is in the same game. true or false. Default: true
+trigger_all_same_game: true
+
+# Announce funny, rare combinations (for example everyone on the desktop at once). true or false. Default: true
+trigger_rare_combo: true
+
+# Extra lines used only in night mode, for the drinking-game tone. One line per "- ", up to 120 characters each.
+night_mode_lines:
+  - "New game started. Everyone in that lobby drinks."
+  - "Someone just rage-quit. Their neighbours drink."

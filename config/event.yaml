@@ -1,0 +1,18 @@
+# LAN OS event. The LAN weekend itself: its name and when it starts and ends.
+# Save the file and LAN OS picks up the change within a few seconds. No restart needed.
+
+# Name of the LAN, shown on the dashboards and admin page. Any text, up to 40 characters. Default: "LAN Weekend '26"
+name: "LAN Weekend '26"
+
+# Short code stored with every game session, song and vote, so stats from different LANs stay apart.
+# Use a new code for every LAN. Lowercase letters, numbers and dashes only. Default: "lan-2026"
+lan_id: "lan-2026"
+
+# When the LAN starts, written as "YYYY-MM-DD HH:MM" in the timezone below (24-hour clock). Default: "2026-11-19 19:00"
+starts_at: "2026-11-19 19:00"
+
+# When the LAN ends, same format. Must be later than starts_at. The wall counts down the hours left to this moment. Default: "2026-11-22 15:00"
+ends_at: "2026-11-22 15:00"
+
+# Timezone of the dates above, as a name like "Europe/Amsterdam" or "Europe/London". Default: "Europe/Amsterdam"
+timezone: "Europe/Amsterdam"

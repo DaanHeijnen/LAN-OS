@@ -1,0 +1,28 @@
+# LAN OS music: LAN Radio, the shared Spotify queue. (LAN Radio arrives in Milestone 2.)
+
+# Take turns between requesters (DJ rotation), so one new request never waits behind someone's whole list.
+# true = take turns, false = strictly first come, first served. Default: true
+dj_rotation: true
+
+# Refuse a song that is already waiting in the queue, and warn the requester. true or false. Default: true
+block_duplicates: true
+
+# Spotify playlist that keeps playing when nobody has requested anything.
+# Paste the playlist link between quotes, or leave "" to use whatever Spotify plays next. Default: ""
+fallback_playlist: ""
+
+# How many skip votes it takes to skip the current song. A whole number from 1 to 7. Default: 4 (a majority of 7 players)
+skip_vote_threshold: 4
+
+# How long before the current song ends LAN OS hands Spotify the next song in the queue.
+# A time from "5s" to "60s". Default: "15s"
+hand_over_before_end: "15s"
+
+# Who may pause and resume the music. everyone or admins. Default: admins
+who_can_pause: admins
+
+# Who may skip a song straight away, without a vote. everyone or admins. Default: admins
+who_can_skip: admins
+
+# Who may change the volume. everyone or admins. Default: admins
+who_can_change_volume: admins

@@ -1,4 +1,4 @@
-# LAN OS theme. Edit a value, save, then run:  node design/build.mjs   (regenerates every mockup).
+# LAN OS theme. Edit a value and save; the wall, dashboards and admin page update by themselves (no restart).
 # Hex colours only. Each comment says where the value is used and which CSS token it sets.
 
 surfaces:
