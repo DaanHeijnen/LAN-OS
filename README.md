@@ -14,6 +14,8 @@ Everything stays on your own network. Nothing needs to be installed on the playe
 
 ## The projector wall
 
+![The projector wall: players grouped by game, LAN Radio, the running poll and the next activity](docs/screenshots/wall.png)
+
 A fixed 1920×1080 layout that scales to any projector or TV, readable from 4 metres.
 
 - **In the room:** a card for every player with their Steam avatar, status, game, game cover and how long they've been playing. Players in the same game are grouped together. Offline players are greyed out with their last game.
@@ -28,6 +30,8 @@ A fixed 1920×1080 layout that scales to any projector or TV, readable from 4 me
 - **Never silent, never stuck:** the wall makes no sound and reconnects by itself if anything restarts.
 
 ## The player dashboard
+
+![The player dashboard: who's playing what, Join game buttons, and LAN Radio with the fair queue](docs/screenshots/player.png)
 
 - **Who's playing what:** the same live roster as the wall, with session times. Each friend has a **Join game** button when Steam shows a lobby or server you can join, otherwise **Steam ↗** to open their profile.
 - **LAN Radio:** search Spotify or paste a song link. Requests go straight into a **fair queue**: requesters take turns, so nobody's ten songs block someone else's one. You also get:
@@ -53,6 +57,8 @@ A fixed 1920×1080 layout that scales to any projector or TV, readable from 4 me
 - **Popups** inside the tab for new polls and activities you joined that are about to start.
 
 ## The admin page
+
+![The admin page: room overview, projector controls with a live preview, and the projector message](docs/screenshots/admin.png)
 
 - **Projector:** a live preview, night mode, brightness, which panels show, and pause or blank the wall.
 - **Message the room:** send a plain-text message to the wall.

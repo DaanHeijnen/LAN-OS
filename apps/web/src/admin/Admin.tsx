@@ -31,7 +31,8 @@ export default function Admin() {
   if (!snapshot?.admin) return null;
   const admin = snapshot.admin;
   const me = snapshot.me;
-  const setupDone = admin.setup.adminPassword && (admin.setup.spotifyConnected || snapshot.demo);
+  // Demo mode needs no setup, so it never nags.
+  const setupDone = snapshot.demo || (admin.setup.adminPassword && admin.setup.spotifyConnected);
 
   return (
     <Shell
