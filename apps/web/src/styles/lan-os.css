@@ -49,3 +49,92 @@ button[aria-disabled=true]{opacity:.55;cursor:not-allowed}
 .sign-in h1{margin:6px 0 10px;font-size:28px;letter-spacing:-.03em}
 .sign-in .pin-input{font-size:28px;letter-spacing:.5em;text-align:center}
 .form-error{color:var(--status-looking);font-size:13px;margin:10px 0 0}
+
+/* Real album art replaces the prototype's decorative cover. */
+.album-cover.has-art,.wall-album.has-art,.album-mini.has-art{background-size:cover;background-position:center}
+.album-cover.has-art:before,.album-cover.has-art:after,.wall-album.has-art:before,.wall-album.has-art:after,
+.album-mini.has-art:before,.album-mini.has-art:after{display:none}
+
+/* Dashboard: LAN Radio, polls, activities. */
+.radio-controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:14px 0 4px}
+.radio-controls .brightness-input{flex:1;min-width:140px}
+.radio-offline{color:var(--status-away)}
+.vote-voters{display:block;color:var(--text-quiet);font-size:11px;margin-top:6px;text-align:left}
+details.side-poll{padding:0;cursor:pointer}
+details.side-poll summary{list-style:none;display:flex;flex-direction:column;gap:2px;padding:12px 22px}
+details.side-poll summary::-webkit-details-marker{display:none}
+.eta-select{margin-left:8px;min-height:28px;padding:2px 6px;font-size:12px;width:auto}
+.activity-who{margin:10px 0 0}
+.activity-ended{padding:0 22px;margin:6px 0}
+.suggestion{margin-bottom:12px}
+.recap-ready{margin:-6px 0 18px;display:flex;align-items:center;gap:10px}
+.mini-action{text-decoration:none}
+
+/* Sign-in. */
+.steam-button{width:100%;margin-top:6px;text-decoration:none}
+.name-choices{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.pin-section{border-top:1px solid var(--border);margin-top:22px}
+
+/* Admin and setup. */
+.setup-nudge{display:flex;gap:8px;align-items:center;margin:0 0 18px;text-decoration:none;color:var(--text-primary)}
+.people-signin{margin:0 22px 14px;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.tie-choices{display:flex;gap:10px;align-items:center;margin-top:6px;font-size:12px;color:var(--status-away)}
+.setup-page{max-width:880px;margin:0 auto;padding:36px 24px 80px;display:flex;flex-direction:column;gap:20px}
+.setup-head{display:flex;flex-direction:column;gap:22px;margin-bottom:6px}
+.setup-head h1{font-size:38px;letter-spacing:-.04em;margin:4px 0}
+.setup-step .setup-body{padding:0 22px 22px}
+.setup-step.done{opacity:.92}
+.setup-list{color:var(--text-secondary);line-height:1.8;padding-left:20px}
+.copy-box{display:inline-block;background:var(--surface-raised);border-radius:6px;padding:2px 8px;margin:4px 0;color:var(--text-primary);user-select:all}
+.setup-connect{margin:16px 0 8px}
+.disabled-link{opacity:.5;pointer-events:none}
+.setup-player{display:inline-flex;align-items:center;gap:6px;background:var(--surface-raised);border-radius:8px;padding:4px 4px 4px 10px;font-size:13px}
+.setup-links{display:flex;flex-wrap:wrap;gap:10px;padding:0 22px 12px}
+.setup-step p.muted.text-sm{margin-top:10px}
+
+/* Wall: quiet states and Discord highlights (sizes stay at or above --fs-minimum). */
+.wall-quiet{color:var(--text-secondary)}
+.wall-song-meta.wall-quiet{padding:18px 0 22px}
+.wall-highlight{font-size:34px;line-height:1.2;font-weight:700;letter-spacing:-.02em;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+
+/* LAN Wrapped. */
+.recap{max-width:1180px;margin:0 auto;padding:30px 24px 80px;display:flex;flex-direction:column;gap:20px}
+.recap-head{display:grid;grid-template-columns:auto 1fr auto;gap:28px;align-items:end}
+.recap-title h1{font-size:40px;letter-spacing:-.04em;margin:4px 0}
+.recap-actions{display:flex;gap:8px}
+.recap-tabs{display:flex;flex-wrap:wrap;gap:6px}
+.recap-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:20px}
+.recap-card{padding-bottom:18px}
+.recap-card>*:not(.section-header){margin-left:22px;margin-right:22px}
+.recap-wide{grid-column:1/-1}
+.recap-row{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--border);font-size:13px}
+.recap-row:last-child{border-bottom:0}
+.recap-row span{color:var(--text-secondary);text-align:right}
+.recap-row small{color:var(--text-quiet)}
+.recap-award{color:var(--accent)}
+.recap-you{border:1px solid var(--accent)}
+.recap-lines{display:flex;flex-direction:column;gap:4px;color:var(--text-secondary);font-size:13px;margin-top:6px}
+.recap-people{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.recap-person{background:var(--surface-raised);border-radius:14px;padding:14px}
+.recap-person .tiny-pill{margin-left:8px}
+.recap-table td,.recap-table th{padding-left:22px}
+.recap-table tr.current td{color:var(--text-primary);font-weight:700}
+.recap-playlist summary{cursor:pointer;color:var(--accent);font-size:13px;margin-top:10px}
+@media(max-width:800px){.recap-head{grid-template-columns:1fr}}
+
+/* Hours-by-time-of-day chart: one accent hue, thin bars, 2px gaps, rounded data-ends on the baseline. */
+.hour-chart{margin:0 22px}
+.hour-bars{display:flex;align-items:flex-end;gap:2px;height:160px;border-bottom:1px solid var(--border)}
+.hour-slot{flex:1;height:100%;display:flex;align-items:flex-end;position:relative;cursor:default;outline:none}
+.hour-slot i{display:block;width:100%;background:var(--accent);border-radius:4px 4px 0 0;opacity:.85}
+.hour-slot.active i,.hour-slot:focus i{opacity:1}
+.hour-tip{position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:var(--surface-raised);color:var(--text-primary);
+  border-radius:8px;padding:6px 9px;font-size:12px;white-space:nowrap;z-index:2;box-shadow:0 6px 18px rgba(0,0,0,.3);pointer-events:none}
+.hour-axis{display:flex;gap:2px;margin-top:6px}
+.hour-axis span{flex:1;font-size:10px;color:var(--text-quiet);white-space:nowrap;overflow:visible}
+
+/* Field types the prototype didn't style, matched to its text inputs. */
+input:not([type]),input[type=password],input[type=number],input[type=datetime-local]{outline:0;background:#152136;border:1px solid #40506a;
+  border-radius:9px;color:var(--text-primary);width:100%;padding:10px 12px;font:inherit;font-size:12px;color-scheme:dark}
+.card-body{padding:0 22px 20px}
+.card-body>.setting-line:first-child{padding-top:0}

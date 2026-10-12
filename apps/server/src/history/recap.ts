@@ -98,6 +98,7 @@ export function buildRecap(db: Db, o: RecapOptions): RecapData | null {
   if (!lan) return null;
   const now = (o.now ?? new Date()).getTime();
   const from = o.range?.from.getTime() ?? 0;
+  const firstEvent = db.prepare('SELECT MIN(occurred_at) FROM events WHERE lan_id = ?').pluck().get(o.lanId) as string | null;
   const to = o.range?.to.getTime() ?? Infinity;
   const inRange = (iso: string) => { const t = Date.parse(iso); return t >= from && t < to; };
   const events = listEvents(db, o.lanId);
@@ -199,7 +200,8 @@ export function buildRecap(db: Db, o: RecapOptions): RecapData | null {
   return {
     lan: { id: lan.id, name: lan.name, startsAt: lan.starts_at, endsAt: lan.ends_at, timezone: tz },
     range: {
-      from: new Date(from || Date.parse(lan.starts_at)).toISOString(),
+      // Without a range: from the LAN's start (or earlier activity) to now, or to the end once it's over.
+      from: new Date(from || Math.min(Date.parse(lan.starts_at), firstEvent ? Date.parse(firstEvent) : Infinity)).toISOString(),
       to: new Date(Number.isFinite(to) ? to : Math.min(now, Date.parse(lan.ends_at))).toISOString(),
       label: o.range?.label ?? 'The whole weekend', final: !!o.final,
     },

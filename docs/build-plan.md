@@ -1,7 +1,6 @@
 # Build plan
 
-Use one Claude Code session per milestone. To start the next one, ask:
-"Read CLAUDE.md and docs/build-plan.md, then build Milestone N."
+All milestones are built. For changes, start a Claude Code session and ask it to read CLAUDE.md first.
 
 Status: ✅ done · 🟡 in progress · ⬜ not started
 
@@ -34,15 +33,27 @@ Status: ✅ done · 🟡 in progress · ⬜ not started
 - Join game appears only for lobbies and servers; everyone else gets Steam ↗.
 - `npm run lint`, `npm run typecheck` and `npm test` pass.
 
-## Later milestones
+## Milestone 2: LAN Radio ✅
 
-- **M2 LAN Radio:** Spotify auth via the admin page, search and paste-link requests, a LAN OS-owned fair queue with DJ rotation that hands Spotify the next track about 15 s before the current one ends, duplicate warnings, removing your own request until it is sent, skip vote, "LAN Radio Offline" state, play history.
-- **M3 Polls and activities:** main and side polls, creator-chosen anonymity, timer, all-voted and manual close; activities with Join / Maybe / Skip and ETA, min/max players, wall countdown, auto-suggest.
-- **M4 Announcements:** activity-based triggers, merging, every 15–60 minutes, optional AI commentary with a template fallback, night-mode lines.
-- **M5 History and LAN Wrapped:** nightly mini-recap and a host-triggered final recap, per-player recap, awards, timeline, styled HTML export, read-only archive, Shared Game Finder from owned Steam libraries.
-- **M6 Finishing:** Discord highlight preview (read-only), Windows installer with auto-start and auto-restart, periodic backups, local DNS name.
+Spotify connected inside LAN OS (PKCE, no client secret), search (10 results, Spotify's limit) and paste-link requests, LAN OS's own fair queue with DJ rotation (least recently served goes first), hand-over to Spotify `hand_over_before_end` before the song ends, duplicate warnings, removing your own request until it's sent, skip votes, pause/skip/volume permissions from `music.yaml`, fallback playlist, "LAN Radio Offline" with automatic retry, every played song logged with its requester. Demo mode uses a pretend Spotify.
 
-## Open points for later
+## Milestone 3: Polls and activities ✅
+
+Main poll plus side polls (`max_side_polls`), own choices or Yes/No/Maybe, creator-chosen anonymity, results live, vote changes within `change_vote_window`, closing by timer, when everyone voted, or by the creator or an admin, ties decided by the host. Activities with Join / Maybe / Skip and ETA, min/max players, start at the time or by Start, auto-end, wall countdown, dashboard reminders, auto-suggest when several players are free. Popups and optional sound cues on dashboards only.
+
+## Milestone 4: Announcements ✅
+
+Triggers (long sessions, poll results, everyone in the same game, rare combinations, activities starting soon), `min_gap` / `average_gap`, merging (only the most important moment is shown), humour on/off, night-mode drinking-game lines, optional Claude wording with template fallback.
+
+## Milestone 5: History and LAN Wrapped ✅
+
+Recap page per LAN and per day or the last 24 hours (the nightly mini-recap), host-published final recap, awards, timeline, personal recaps, hours-by-time-of-day chart, music stats and the weekend playlist, standalone HTML export, archive of every LAN and the LAN Time Capsule comparison. Shared Game Finder from Steam libraries (needs a Steam API key). Admins can remove incorrect events.
+
+## Milestone 6: Finishing ✅
+
+In-app setup page (no file editing), Steam presence without an API key, "Sign in through Steam" with "Which one are you?", automatic backups, `lan-os.local` announced on the network, start-with-Windows scripts, Discord highlights (read-only), safety controls.
+
+## Ideas for later
 
 - Wall type sizes follow the prototype's fixed pixel sizes; wiring them to `theme.yaml`'s size tokens would let the owner resize wall text from the config.
-- "Safety controls" (disable submissions, hide public content) arrive together with polls and music.
+- A real Windows installer (the start file plus start-with-Windows covers the need for now).

@@ -1,46 +1,90 @@
 // The player dashboard (/app). Markup follows design/prototype/design/templates/player.html.
-// Real in Milestone 1: the roster with Join game / Steam ↗, "Your status", panel layout and compact view.
-// LAN Radio, polls, activities and the Shared Game Finder show demo data until their milestone.
-import { useCallback, useEffect, useState, type SyntheticEvent } from 'react';
+import { useCallback, useEffect, useRef, useState, type SyntheticEvent } from 'react';
 import {
-  DASHBOARD_PANELS, DEMO_ACTIVITY, DEMO_POLL, DEMO_SHARED_GAMES, formatDuration, isJoinable, lanClock, shortDate,
-  STATUS_DISPLAY, type DashboardLayout, type LiveSnapshot, type MeInfo, type PlayerCard,
+  DASHBOARD_PANELS, formatDuration, isJoinable, lanClock, shortDate, STATUS_DISPLAY,
+  type DashboardLayout, type LiveSnapshot, type MeInfo, type PlayerCard,
 } from '@lan-os/shared';
-import { cardDuration, cardGame, gameCode, mmss, staleLabel } from '../format.ts';
+import { cardDuration, cardGame, gameCode, staleLabel } from '../format.ts';
 import { api, useLive, useNow } from '../live.ts';
-import { demoRadioAt, groupRoster } from '../roster.ts';
+import { groupRoster } from '../roster.ts';
 import { Avatar, Modal, StatusDot, Switch, useAction, useToast } from '../ui/common.tsx';
 import { Icon, type IconName } from '../ui/Icon.tsx';
 import { AllSystems, Shell, TopAvatar } from '../ui/Shell.tsx';
+import { ActivitiesPanel, ActivityModal, HistoryPanel, PollModal, PollsPanel, RadioPanel, SongModal, type Panel } from './panels.tsx';
 import { useSignedIn } from './SignIn.tsx';
 import '../styles/app.css';
 import '../styles/lan-os.css';
 
-type Panel = (typeof DASHBOARD_PANELS)[number];
 const DEFAULT_LAYOUT: DashboardLayout = { order: [...DASHBOARD_PANELS], hidden: [], collapsed: [], compact: false };
 const PANEL_NAMES: Record<Panel, string> = { radio: 'LAN Radio', polls: 'Room decisions', activities: 'Coming up', history: 'Session history' };
+const SOUND_KEY = 'lanos-sound-cues';
 
-/** Panels whose real features come later. Their buttons explain that instead of pretending. */
-const COMING_SOON = {
-  radio: 'LAN Radio is coming soon (Milestone 2). This panel shows sample music for now.',
-  polls: 'Polls are coming soon (Milestone 3). This poll is a sample.',
-  activities: 'Activities are coming soon (Milestone 3). This one is a sample.',
-  finder: 'The Shared Game Finder is coming soon (Milestone 5). These games are samples.',
-};
+type ModalState = 'status' | 'customize' | 'song' | 'poll' | 'activity' | { player: string } | null;
+
+const readSound = () => { try { return localStorage.getItem(SOUND_KEY) === 'on'; } catch { return false; } };
+
+/** A short, soft chime for important items. Dashboards only; the projector never makes sound. */
+function chime() {
+  try {
+    const ctx = new AudioContext();
+    for (const [i, freq] of [660, 880].entries()) {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0.0001, ctx.currentTime + i * 0.12);
+      gain.gain.exponentialRampToValueAtTime(0.08, ctx.currentTime + i * 0.12 + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + i * 0.12 + 0.25);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(ctx.currentTime + i * 0.12);
+      osc.stop(ctx.currentTime + i * 0.12 + 0.3);
+    }
+    window.setTimeout(() => void ctx.close(), 800);
+  } catch { /* no audio available */ }
+}
+
+/** Popups (inside this tab only) for a new poll and for activities you joined that start soon. */
+function useNotifications(snapshot: LiveSnapshot | null, me: MeInfo | undefined, now: Date, sound: boolean) {
+  const toast = useToast();
+  const seen = useRef<Set<string> | null>(null);
+  useEffect(() => {
+    if (!snapshot || !me) return;
+    const keys: Array<[string, string]> = [];
+    for (const p of snapshot.polls) {
+      if (!p.closedAt && p.createdById !== me.id && p.myVote === null) keys.push([`poll:${p.id}`, `New poll from ${p.createdBy}: ${p.question}`]);
+      if (p.closedAt && p.tie === false && p.winner !== null) keys.push([`poll-closed:${p.id}`, `"${p.question}": ${p.options[p.winner]} wins.`]);
+    }
+    for (const a of snapshot.activities) {
+      const until = Date.parse(a.startsAt) - now.getTime();
+      if (a.status === 'upcoming' && a.organizerId !== me.id && a.myAnswer === null) keys.push([`activity:${a.id}`, `${a.organizer} proposed ${a.title}. Join?`]);
+      if (a.status === 'upcoming' && (a.myAnswer === 'join' || a.myAnswer === 'maybe') && until <= 5 * 60_000) keys.push([`soon:${a.id}`, `${a.title} starts in ${Math.max(1, Math.round(until / 60_000))} minutes.`]);
+    }
+    // The first snapshot only records what already exists, so a page load doesn't fire old popups.
+    if (seen.current === null) {
+      seen.current = new Set(keys.map(([k]) => k));
+      return;
+    }
+    const fresh = keys.filter(([k]) => !seen.current!.has(k));
+    for (const [k] of fresh) seen.current.add(k);
+    if (fresh.length) {
+      toast(fresh[fresh.length - 1]![1]);
+      if (sound) chime();
+    }
+  }, [snapshot, me, now, sound, toast]);
+}
 
 export default function Player() {
   const signedIn = useSignedIn('player');
   const { snapshot, connected, offsetMs } = useLive('app');
   const now = useNow(offsetMs);
-  const [modal, setModal] = useState<'status' | 'customize' | { player: string } | null>(null);
+  const [modal, setModal] = useState<ModalState>(null);
   const [layout, setLayoutState] = useState<DashboardLayout>(DEFAULT_LAYOUT);
+  const [sound, setSound] = useState(readSound);
   const toast = useToast();
 
   useEffect(() => { document.title = 'LAN OS · Player dashboard'; }, []);
   useEffect(() => { if (snapshot?.me?.layout) setLayoutState(snapshot.me.layout); }, [snapshot?.me?.layout]);
-  useEffect(() => {
-    document.body.className = `app-shell player-page${layout.compact ? ' mini' : ''}`;
-  }, [layout.compact]);
+  useEffect(() => { document.body.className = `app-shell player-page${layout.compact ? ' mini' : ''}`; }, [layout.compact]);
+  useNotifications(snapshot, snapshot?.me, now, sound);
 
   const setLayout = useCallback((next: DashboardLayout) => {
     setLayoutState(next);
@@ -49,7 +93,12 @@ export default function Player() {
 
   if (!signedIn || !snapshot?.me) return null;
   const me = snapshot.me;
-  const soon = (text: string) => () => toast(text);
+  const open = (m: 'song' | 'poll' | 'activity') => setModal(m);
+  const openPolls = snapshot.polls.filter(p => !p.closedAt && p.myVote === null).length;
+  const panelProps = (panel: Panel) => ({
+    snapshot, me, now, open, collapsed: layout.collapsed.includes(panel),
+    onToggle: () => setLayout({ ...layout, collapsed: toggle(layout.collapsed, panel) }),
+  });
 
   return (
     <>
@@ -57,17 +106,18 @@ export default function Player() {
         snapshot={snapshot} now={now} sectionLabel="YOUR SPACE" breadcrumb="PLAYER DASHBOARD"
         nav={[
           { href: '#overview', icon: 'layout-dashboard', label: 'Overview' },
-          { href: '#radio', icon: 'music-2', label: 'LAN Radio', count: demoRadioAt(now).queue.length },
-          { href: '#polls', icon: 'chart-no-axes-column', label: 'Polls & activities' },
+          { href: '#radio', icon: 'music-2', label: 'LAN Radio', count: snapshot.radio.queue.length },
+          { href: '#polls', icon: 'chart-no-axes-column', label: 'Polls & activities', ...(openPolls ? { count: openPolls } : {}) },
           { href: '#game-finder', icon: 'gamepad-2', label: 'Games & friends' },
-          { href: '#history', icon: 'history', label: 'History' },
+          { href: '/recap', icon: 'history', label: 'LAN Wrapped' },
         ]}
         extraLabel="MANAGEMENT"
         extraNav={me.isAdmin ? [{ href: '/admin', icon: 'sliders-horizontal', label: 'Admin tools', trailing: true }] : []}
         health={<><StatusDot level={snapshot.health.steam.level} />{snapshot.health.steam.level === 'ok' ? 'Steam connected' : snapshot.health.steam.label}
-          <span className="muted">· {snapshot.health.steam.level === 'ok' ? `${snapshot.demo ? 'demo' : 'live'} sync` : 'see admin'}</span></>}
+          <span className="muted">· {snapshot.health.steam.level === 'ok' ? 'live sync' : 'see admin'}</span></>}
         account={<button type="button" className="account-switch" onClick={() => setModal('status')}>
-          <Avatar nickname={me.nickname} tone={me.tone} /><span><b>{me.nickname}</b><small>Your profile &amp; status</small></span><Icon name="chevrons-up-down" />
+          <Avatar nickname={me.nickname} tone={me.tone} url={snapshot.players.find(p => p.id === me.id)?.avatarUrl} />
+          <span><b>{me.nickname}</b><small>Your profile &amp; status</small></span><Icon name="chevrons-up-down" />
         </button>}
         topbar={<>
           <AllSystems snapshot={snapshot} connected={connected} />
@@ -80,22 +130,25 @@ export default function Player() {
         <main className="main-content player-main" id="overview">
           <PageHead snapshot={snapshot} me={me} now={now} />
           <div className="quick-actions">
-            <button className="button button-primary" onClick={soon(COMING_SOON.radio)}><Icon name="plus" /> Request a song <Icon name="arrow-up-right" className="button-tail" /></button>
-            <button className="button button-soft" onClick={soon(COMING_SOON.polls)}><Icon name="chart-no-axes-column" /> Start a poll</button>
-            <button className="button button-soft" onClick={soon(COMING_SOON.activities)}><Icon name="calendar-plus" /> Propose activity</button>
+            <button className="button button-primary" disabled={!snapshot.radio.requestsOpen} onClick={() => open('song')}
+              title={snapshot.radio.requestsOpen ? undefined : snapshot.radio.message ?? snapshot.radio.requestsClosedReason ?? undefined}>
+              <Icon name="plus" /> Request a song <Icon name="arrow-up-right" className="button-tail" /></button>
+            <button className="button button-soft" onClick={() => open('poll')}><Icon name="chart-no-axes-column" /> Start a poll</button>
+            <button className="button button-soft" onClick={() => open('activity')}><Icon name="calendar-plus" /> Propose activity</button>
             <button className="button button-quiet" onClick={() => setModal('status')}><Icon name="scan-face" /> Your status <Icon name="chevron-down" /></button>
           </div>
+          {snapshot.recapPublished && <div className="fair-note recap-ready"><Icon name="history" /> LAN Wrapped is ready. <a className="text-button" href="/recap">See the weekend in numbers <Icon name="arrow-right" /></a></div>}
           <div className="player-layout">
             <div className="player-primary">
               <Roster snapshot={snapshot} me={me} now={now} onEditStatus={() => setModal('status')} onDetails={id => setModal({ player: id })} />
-              <GameFinder />
+              <GameFinder snapshot={snapshot} />
             </div>
             <div className="player-secondary" id="player-panels">
-              {layout.order.filter(p => !layout.hidden.includes(p)).map(panel => (
-                <SidePanel key={panel} panel={panel} collapsed={layout.collapsed.includes(panel)} now={now} me={me}
-                  playerCount={snapshot.players.length} timezone={snapshot.event.timezone}
-                  onToggle={() => setLayout({ ...layout, collapsed: toggle(layout.collapsed, panel) })} />
-              ))}
+              {layout.order.filter(p => !layout.hidden.includes(p)).map(panel =>
+                panel === 'radio' ? <RadioPanel key={panel} {...panelProps(panel)} />
+                  : panel === 'polls' ? <PollsPanel key={panel} {...panelProps(panel)} />
+                    : panel === 'activities' ? <ActivitiesPanel key={panel} {...panelProps(panel)} />
+                      : <HistoryPanel key={panel} {...panelProps(panel)} />)}
             </div>
           </div>
           <div className="footer-note">Made for the people in this room. LAN-only · No pop-ups outside this tab{snapshot.demo ? ' · Demo data' : ''}</div>
@@ -103,10 +156,13 @@ export default function Player() {
       </Shell>
       <button className="button button-primary mini-exit" onClick={() => setLayout({ ...layout, compact: false })}><Icon name="panels-top-left" /> Expand dashboard</button>
 
-      {modal === 'status' && <StatusModal snapshot={snapshot} me={me} onClose={() => setModal(null)} />}
+      {modal === 'status' && <StatusModal snapshot={snapshot} me={me} sound={sound} onSound={on => { setSound(on); try { localStorage.setItem(SOUND_KEY, on ? 'on' : 'off'); } catch { /* private window */ } if (on) chime(); }} onClose={() => setModal(null)} />}
       {modal === 'customize' && <CustomizeModal layout={layout} onChange={setLayout} onClose={() => setModal(null)} />}
+      {modal === 'song' && <SongModal onClose={() => setModal(null)} />}
+      {modal === 'poll' && <PollModal onClose={() => setModal(null)} />}
+      {modal === 'activity' && <ActivityModal onClose={() => setModal(null)} />}
       {modal && typeof modal === 'object' && <PlayerDetails player={snapshot.players.find(p => p.id === modal.player)} me={me}
-        now={now} timezone={snapshot.event.timezone} onClose={() => setModal(null)} />}
+        now={now} onClose={() => setModal(null)} />}
     </>
   );
 }
@@ -117,7 +173,7 @@ function PageHead({ snapshot, me, now }: { snapshot: LiveSnapshot; me: MeInfo; n
   const clock = lanClock(snapshot.event, now);
   const tz = snapshot.event.timezone;
   const date = shortDate(now.toISOString(), tz, { weekday: 'long', day: 'numeric', month: 'long' }).toUpperCase();
-  const online = snapshot.players.filter(p => p.status !== 'offline').length;
+  const online = snapshot.players.filter(p => p.status !== 'offline' && p.status !== 'unknown').length;
   return (
     <div className="page-head">
       <div>
@@ -208,21 +264,22 @@ function PlayerRow({ p, me, now, timezone, onEditStatus, onDetails }:
   );
 }
 
-function GameFinder() {
-  const toast = useToast();
+function GameFinder({ snapshot }: { snapshot: LiveSnapshot }) {
+  const finder = snapshot.gameFinder;
   return (
     <section className="card game-finder" id="game-finder">
       <div className="section-header">
         <div><div className="section-overline">SHARED GAME FINDER</div><h2>Play something together</h2></div>
-        <button type="button" className="tiny-pill coming-soon-pill" onClick={() => toast(COMING_SOON.finder)}>COMING SOON</button>
+        <span className="tiny-pill">{finder.available ? 'FROM STEAM LIBRARIES' : 'NEEDS STEAM KEY'}</span>
       </div>
       <p className="muted game-finder-intro">Games several friends own. Suggestions stay here, never on the wall.</p>
+      {finder.reason && <p className="muted game-finder-intro">{finder.reason}</p>}
       <div id="game-finder-list">
-        {DEMO_SHARED_GAMES.map((g, i) => (
-          <div className="game-suggestion" key={g.name}>
+        {finder.games.map((g, i) => (
+          <div className="game-suggestion" key={g.appId}>
             <div className={`game-tile ${['dr', 'va', 'rl'][i % 3]}`}>{gameCode(g.name)}</div>
-            <div><b>{g.name}</b><span>{g.owners} of 7 players own it</span></div>
-            <span className="tiny-pill">SAMPLE</span>
+            <div><b>{g.name}</b><span title={g.owners.join(', ')}>{g.owners.length} of {snapshot.players.length} players own it</span></div>
+            <a className="tiny-pill" href={`steam://run/${g.appId}`}>PLAY ↗</a>
           </div>
         ))}
       </div>
@@ -230,122 +287,16 @@ function GameFinder() {
   );
 }
 
-function SidePanel({ panel, collapsed, now, me, playerCount, timezone, onToggle }: {
-  panel: Panel; collapsed: boolean; now: Date; me: MeInfo; playerCount: number; timezone: string; onToggle: () => void;
-}) {
-  const toast = useToast();
-  const soon = (text: string) => () => toast(text);
-  const collapse = <button className="icon-btn compact" onClick={onToggle} title="Collapse or expand" aria-label={`Collapse or expand ${PANEL_NAMES[panel]}`}><Icon name="chevron-up" /></button>;
-  const cls = `card ${collapsed ? 'collapsed' : ''}`;
-
-  if (panel === 'radio') {
-    const radio = demoRadioAt(now);
-    return (
-      <section className={`${cls} radio-panel`} id="radio" data-panel="radio">
-        <div className="section-header">
-          <div><div className="section-overline">LAN RADIO</div><h2>Music for the room</h2></div>
-          <div className="card-header-actions"><span className="connected-label coming-soon-pill">Sample · coming soon</span>{collapse}</div>
-        </div>
-        <div id="player-radio"><div className="radio-content">
-          <div className="now-playing-block">
-            <div className="album-cover" data-label={radio.now.artist} />
-            <div><div className="now-title">{radio.now.title}</div><div className="now-artist">{radio.now.artist}</div>
-              <div className="requester">▶ Playing · Requested by {radio.now.requester}</div></div>
-          </div>
-          <div className="progress-track"><div className="progress-fill" style={{ width: `${Math.round((100 * radio.now.position) / radio.now.length)}%` }} /></div>
-          <div className="progress-times"><span>{mmss(radio.now.position)}</span><span>{mmss(radio.now.length)}</span></div>
-          <div className="queue-head"><strong>Up next</strong><span>{radio.queue.length} in the fair queue</span></div>
-          {radio.queue.map((s, i) => (
-            <div className="queue-row" key={s.title}>
-              <span className="queue-number">{i + 1}</span>
-              <div><strong>{s.title}</strong><small>{s.artist} · {s.requester}</small></div>
-              {s.requester === me.nickname && <button type="button" className="queue-remove" title="Remove your request" onClick={soon(COMING_SOON.radio)}><Icon name="x" /></button>}
-            </div>
-          ))}
-          <div className="fair-note"><Icon name="users-round" /> One song per requester per round. Everyone gets a turn.</div>
-          <div className="radio-actions"><span className="muted text-sm">Requests are added immediately</span>
-            <button className="text-button" onClick={soon(COMING_SOON.radio)}>Add track <Icon name="arrow-right" /></button></div>
-        </div></div>
-      </section>
-    );
-  }
-
-  if (panel === 'polls') {
-    const total = DEMO_POLL.options.reduce((sum, o) => sum + o.count, 0);
-    const max = Math.max(...DEMO_POLL.options.map(o => o.count));
-    return (
-      <section className={`${cls} poll-panel`} id="polls" data-panel="polls">
-        <div className="section-header">
-          <div><div className="section-overline">POLL · MAIN</div><h2>Room decisions</h2></div>
-          <div className="card-header-actions"><span className="tiny-pill accent-pill">SAMPLE</span>{collapse}</div>
-        </div>
-        <div id="player-poll"><div className="poll-body">
-          <h3 className="poll-question">{DEMO_POLL.question}</h3>
-          <p className="poll-meta">Started by {DEMO_POLL.startedBy} · {total} of {playerCount} voted · Results live</p>
-          {DEMO_POLL.options.map(o => (
-            <button key={o.label} className={`vote-option ${o.count === max ? 'leading' : ''}`} onClick={soon(COMING_SOON.polls)}>
-              <div className="vote-option-head"><span>{o.label}</span><span className="vote-option-count">{o.count} {o.count === 1 ? 'vote' : 'votes'}</span></div>
-              <div className="progress-track"><div className="progress-fill" style={{ width: `${Math.round((100 * o.count) / Math.max(1, total))}%` }} /></div>
-            </button>
-          ))}
-          <div className="poll-bottom"><span>Choose an option to vote.</span><button className="text-button" onClick={soon(COMING_SOON.polls)}>+ New poll</button></div>
-        </div></div>
-      </section>
-    );
-  }
-
-  if (panel === 'activities') {
-    return (
-      <section className={`${cls} activity-panel`} id="activities" data-panel="activities">
-        <div className="section-header">
-          <div><div className="section-overline">UP NEXT</div><h2>Coming up</h2></div>
-          <div className="card-header-actions"><span className="muted text-sm">Sample activity</span>{collapse}</div>
-        </div>
-        <div id="player-activity"><div className="activity-body">
-          <div className="activity-big">
-            <div><div className="activity-title">{DEMO_ACTIVITY.title}</div><div className="activity-meta">{DEMO_ACTIVITY.kind} · {DEMO_ACTIVITY.joined} joined · By {DEMO_ACTIVITY.organizer}</div></div>
-            <div className="activity-time"><b>{DEMO_ACTIVITY.startsInMinutes}m</b><small>until start</small></div>
-          </div>
-          <div className="rsvp-line"><span className="rsvp-label">Are you joining?</span>
-            <div className="rsvp-buttons">{['Join', 'Maybe', 'Skip'].map(x => <button key={x} className="rsvp-button" onClick={soon(COMING_SOON.activities)}>{x}</button>)}</div>
-          </div>
-        </div></div>
-      </section>
-    );
-  }
-
-  return (
-    <section className={`${cls} player-history`} id="history" data-panel="history">
-      <div className="section-header"><div><div className="section-overline">THIS WEEKEND</div><h2>Your last sessions</h2></div>{collapse}</div>
-      <div id="recent-sessions">
-        {me.sessions.length === 0 && <div className="history-row"><b>No game sessions yet</b><span>They appear here as you play</span></div>}
-        {me.sessions.map(s => (
-          <div className="history-row" key={s.startedAt}>
-            <b>{s.game}</b>
-            <span>{formatDuration(s.endedAt ? s.seconds : (now.getTime() - Date.parse(s.startedAt)) / 1000)} · {s.endedAt ? whenLabel(s.endedAt, now, timezone) : 'Playing now'}</span>
-          </div>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-function whenLabel(iso: string, now: Date, timezone: string): string {
-  const day = (d: Date) => shortDate(d.toISOString(), timezone, { year: 'numeric', month: 'numeric', day: 'numeric' });
-  const then = new Date(iso);
-  if (day(then) === day(now)) return 'Earlier today';
-  if (day(then) === day(new Date(now.getTime() - 86_400_000))) return 'Yesterday';
-  return shortDate(iso, timezone, { weekday: 'long' });
-}
-
-function StatusModal({ snapshot, me, onClose }: { snapshot: LiveSnapshot; me: MeInfo; onClose: () => void }) {
+function StatusModal({ snapshot, me, sound, onSound, onClose }:
+  { snapshot: LiveSnapshot; me: MeInfo; sound: boolean; onSound: (on: boolean) => void; onClose: () => void }) {
   const card = snapshot.players.find(p => p.id === me.id);
   const run = useAction();
   const [game, setGame] = useState(me.manualGame ?? '');
   const [pin, setPin] = useState('');
   const status = (body: object, success: string) => run(() => api('/api/me/status', 'POST', body), success);
   return (
-    <Modal title="Your status & privacy" label="STEAM PRESENCE" onClose={onClose}>
+    <Modal title="Your status & privacy" label="STEAM PRESENCE" onClose={onClose}
+      footer={<button className="button button-quiet" onClick={() => void api('/api/auth/sign-out').then(() => location.replace('/app/sign-in'))}><Icon name="log-out" /> Sign out</button>}>
       <div className="status-settings">
         <div className="setting-line">
           <div><b>Looking for players</b><small>Let everyone know you have room for one more.</small></div>
@@ -357,6 +308,10 @@ function StatusModal({ snapshot, me, onClose }: { snapshot: LiveSnapshot; me: Me
           <Switch label="Hide me from projector" checked={card?.hiddenFromWall ?? false}
             onChange={next => void status({ hiddenFromWall: next }, next ? 'Hidden from the wall.' : 'Visible on the wall again.')} />
         </div>
+        <div className="setting-line">
+          <div><b>Sound cues</b><small>A soft chime in this tab for new polls and activities starting soon.</small></div>
+          <Switch label="Sound cues" checked={sound} onChange={onSound} />
+        </div>
         <form onSubmit={e => { e.preventDefault(); void status({ manualGame: game.trim() || null }, game.trim() ? 'Manual game override saved.' : 'Steam game detection restored.'); }}>
           <div className="modal-field">
             <label htmlFor="manual-game">Manual game override</label>
@@ -365,11 +320,11 @@ function StatusModal({ snapshot, me, onClose }: { snapshot: LiveSnapshot; me: Me
           </div>
           <button type="submit" className="button button-soft button-small">Save game override</button>
         </form>
-        <form onSubmit={e => { e.preventDefault(); void run(() => api('/api/me/pin', 'POST', { pin }), 'PIN saved. Use it with your join link on a new browser.').then(ok => ok && setPin('')); }}>
+        <form onSubmit={e => { e.preventDefault(); void run(() => api('/api/me/pin', 'POST', { pin }), 'PIN saved.').then(ok => ok && setPin('')); }}>
           <div className="modal-field">
             <label htmlFor="pin">Quick PIN for a new browser {me.hasPin && <span className="muted">· set</span>}</label>
             <input id="pin" inputMode="numeric" pattern="\d{4}" maxLength={4} value={pin} onChange={e => setPin(e.target.value.replace(/\D/g, ''))} placeholder="4 digits" />
-            <small>Optional. With a PIN you can open your join link on another PC without signing in to Steam.</small>
+            <small>Optional. With a PIN you can sign in on another PC without Steam: pick your name on the sign-in page.</small>
           </div>
           <button type="submit" className="button button-soft button-small" disabled={pin.length !== 4}>Save PIN</button>
           {me.hasPin && <button type="button" className="text-button" style={{ marginLeft: 12 }}
@@ -408,17 +363,15 @@ function CustomizeModal({ layout, onChange, onClose }: { layout: DashboardLayout
   );
 }
 
-function PlayerDetails({ player, me, now, timezone, onClose }:
-  { player: PlayerCard | undefined; me: MeInfo; now: Date; timezone: string; onClose: () => void }) {
+function PlayerDetails({ player, me, now, onClose }: { player: PlayerCard | undefined; me: MeInfo; now: Date; onClose: () => void }) {
   if (!player) return null;
   const game = cardGame(player);
-  const yours = player.id === me.id;
-  const earlier = yours ? me.sessions.find(s => s.endedAt) : undefined;
+  const earlier = player.id === me.id ? me.sessions.find(s => s.endedAt) : undefined;
   return (
     <Modal title={`${player.nickname}'s session`} label="PLAYER DETAILS" onClose={onClose}
       footer={<button className="button button-soft" onClick={onClose}>Close</button>}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 15, marginBottom: 20 }}>
-        <Avatar nickname={player.nickname} tone={player.tone} url={player.avatarUrl} className="large-avatar" />
+        <Avatar nickname={player.nickname} tone={player.tone} url={player.avatarUrl} />
         <div><b style={{ fontSize: 17 }}>{player.nickname}</b>
           <div className="muted text-sm">{STATUS_DISPLAY[player.status].word}{game ? ` · ${game.prefix}${game.name}` : ''}</div></div>
       </div>
@@ -428,7 +381,7 @@ function PlayerDetails({ player, me, now, timezone, onClose }:
         <b>{cardDuration(player, now)}</b>
       </div>
       {earlier && <div className="setting-line">
-        <div><b>Previous session</b><small>{earlier.game} · {formatDuration(earlier.seconds)} · {whenLabel(earlier.endedAt!, now, timezone)}</small></div>
+        <div><b>Previous session</b><small>{earlier.game} · {formatDuration(earlier.seconds)}</small></div>
         <Icon name="history" />
       </div>}
       <p className="modal-help">LAN OS measures session time from the first Steam presence observation, not from a process on the PC.</p>

@@ -565,6 +565,7 @@ export class LiveHub {
       sessionStartedAt: state?.session?.startedAt ?? null,
       looking: profile?.looking ?? false,
       hiddenFromWall: p.hidden_from_wall,
+      steamLinked: steamId !== null,
       link: state?.link ?? null,
       updatedAt: state?.updatedAt ?? null,
     };

@@ -60,3 +60,16 @@ Locked decisions for LAN OS. Don't re-ask these; change them only on the owner's
 - **Join links** are made by an admin (demo mode makes them automatically). The token is kept in the database so the link can be copied again; making a new link retires the old one.
 - **Admin access:** a signed-in player with `role: admin`, or the `ADMIN_PASSWORD` from `.env`. In demo mode, join links sign in without Steam.
 - **Exit codes:** LAN OS exits with 2 on a config problem (the start file waits for a fix) and 1 on a crash (the start file restarts it after 5 seconds).
+
+## Milestones 2–6 (owner's request: a finished product with sign-in inside the app)
+
+- **Setup happens in the app.** The setup page writes keys to `.env` and settings to `config/`. The owner never edits files.
+- **The host PC is always admin.** Requests from the host PC itself (127.0.0.1) get admin access; other PCs need an admin player or the admin password.
+- **Steam without an API key.** Presence comes from public Steam profiles (`steamcommunity.com/profiles/<id>/?xml=1`): in game, online and offline, the game, and server IPs. A Steam Web API key is optional and adds Away, lobby joins and the Shared Game Finder (owned games are only available through the API).
+- **"Sign in through Steam" for everyone.** A known Steam account goes straight in. A new one picks an unlinked name ("Which one are you?") or adds itself as a new player; trusted friends on a LAN, and admins can remove anyone. Join links and PINs still work.
+- **Spotify needs a developer app.** Spotify only lets registered apps log in, and since February 2026 the app owner must have Premium. The setup page walks the host through creating one; LAN OS uses PKCE, so only the Client ID is needed. Spotify requires the redirect address `http://127.0.0.1:<port>/auth/spotify/callback`, so connecting happens on the host PC.
+- **DJ rotation:** requesters take turns; whoever was served least recently goes first.
+- **Panels when nothing is active:** the poll panel shows picked Discord highlights or stays quiet; the activity panel invites a proposal.
+- **Demo mode** seeds the design's sample moment as real data (sessions, the "Next break?" poll, the "Pizza break" activity, the radio queue) and uses a pretend Spotify.
+- **Second migration** (`002_radio_polls_activities.sql`) adds radio requests, polls and votes, activities and RSVPs, and owned games.
+- **Extra packages:** `@anthropic-ai/sdk` for the optional AI wording (model `claude-opus-5-5`, low effort, server-side fallbacks). Multicast DNS for `lan-os.local` is implemented without a package.

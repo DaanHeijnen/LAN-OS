@@ -20,6 +20,8 @@ export interface PlayerCard {
   sessionStartedAt: string | null;
   looking: boolean;
   hiddenFromWall: boolean;
+  /** false until the player has signed in with Steam (or has a Steam ID in players.yaml). */
+  steamLinked: boolean;
   link: SteamLink | null;
   /** Last time Steam answered for this player; shown with "Unknown". */
   updatedAt: string | null;
@@ -216,7 +218,11 @@ export const myStatusSchema = z.strictObject({
 });
 
 export const pinSchema = z.strictObject({ pin: z.string().regex(/^\d{4}$/, 'Use exactly 4 digits').nullable() });
-export const pinSignInSchema = z.strictObject({ join: z.string().min(1).max(100), pin: z.string().regex(/^\d{4}$/) });
+export const pinSignInSchema = z.strictObject({
+  join: z.string().min(1).max(100).optional(),
+  playerId: z.string().min(1).max(40).optional(),
+  pin: z.string().regex(/^\d{4}$/, 'A PIN is 4 digits'),
+}).refine(v => v.join || v.playerId, 'Pick your name first');
 export const adminSignInSchema = z.strictObject({ password: z.string().min(1).max(200) });
 
 export const playerFieldsSchema = z.strictObject({

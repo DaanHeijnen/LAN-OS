@@ -10,7 +10,7 @@ const config = {
 const store = { get: () => config } as unknown as ConfigStore;
 const card = (over: Partial<PlayerCard>): PlayerCard => ({
   id: 'sam', nickname: 'Sam', tone: 0, avatarUrl: null, status: 'in_game', statusSince: '', game: { name: 'Valheim', appId: '1' },
-  lastKnownGame: null, sessionStartedAt: null, looking: false, hiddenFromWall: false, link: null, updatedAt: null, ...over,
+  lastKnownGame: null, sessionStartedAt: null, looking: false, hiddenFromWall: false, steamLinked: true, link: null, updatedAt: null, ...over,
 });
 
 function setup() {

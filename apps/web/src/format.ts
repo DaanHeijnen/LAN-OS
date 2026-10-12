@@ -29,6 +29,7 @@ export function cardGame(p: PlayerCard): { name: string; prefix: string } | null
 /** "stale since 14:02" while Steam can't be reached. */
 export function staleLabel(p: PlayerCard, timezone: string): string | null {
   if (p.status !== 'unknown') return null;
+  if (!p.steamLinked) return 'not signed in yet';
   return p.updatedAt ? `stale since ${clockTime(new Date(p.updatedAt), timezone)}` : 'no data yet';
 }
 

@@ -18,13 +18,21 @@ The owner is not a developer and works in VS Code on Windows. Write for a beginn
 apps/server/        Fastify server. Node 22 runs the .ts files directly (no build step)
   src/config/       config loading, validation, hot reload, write-back; defaults/ = templates
   src/db/           SQLite: database.ts runs migrations/NNN_*.sql in order
-  src/presence/     Steam presence and session tracking
+  src/presence/     Steam presence (Web API or public profiles) and session tracking
+  src/radio/        LAN Radio: Spotify, fair queue
+  src/polls/        polls and activities
+  src/announce/     wall announcements (templates + optional AI)
+  src/history/      LAN Wrapped, HTML export, Shared Game Finder
+  src/http/         routes: auth, player, admin/setup
+  src/live/hub.ts   owns all services and builds each screen's snapshot
+  src/demo/         pretend Steam and Spotify, demo seed
   test/             Vitest tests
-apps/web/           React + Vite: /wall, /app, /admin. Styles copied from the prototype
+apps/web/           React + Vite: /wall, /app, /admin, /setup, /recap. Styles copied from the prototype
 packages/shared/    zod schemas, types and pure logic shared by server and web
 config/             the YAML files the owner edits (+ README.md)
 data/               database, backups, logs, crash reports (git-ignored)
 docs/               requirements, decisions, build plan, going live
+tools/              start-with-Windows scripts
 design/prototype/   the approved design v02 (read-only)
 archive/            old setup docs, kept for context only
 ```
@@ -35,7 +43,7 @@ archive/            old setup docs, kept for context only
 - `npm run typecheck`: TypeScript in every workspace
 - `npm run lint`: ESLint
 - `npm run build`: build the web app into `apps/web/dist` (the server serves it)
-- `npm run demo`: run with simulated players and integrations (`Start LAN OS (demo).bat` on Windows)
+- `npm run demo`: run with simulated players and integrations (`Start LAN OS (demo).bat` on Windows); add `-- --no-browser` to skip opening a browser
 - `npm start`: run for real (`Start LAN OS.bat` on Windows)
 - `npm run dev:web`: Vite dev server with hot reload; run the server alongside it
 

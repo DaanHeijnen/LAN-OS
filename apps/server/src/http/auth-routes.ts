@@ -137,16 +137,21 @@ export function authRoutes(app: FastifyInstance, c: AppContext, h: Helpers): voi
   app.post('/api/auth/pin', async (request, reply) => {
     const input = h.body(pinSignInSchema, request, reply);
     if (!input) return;
-    const playerId = c.accounts.playerForJoinLink(input.join);
-    if (!playerId) return reply.code(400).send({ error: 'This join link is no longer valid. Ask an admin for a new one.' });
-    if (pinAttempts.blocked(input.join)) return reply.code(429).send({ error: 'Too many wrong PINs. Wait 10 minutes, or sign in with Steam.' });
+    const playerId = input.join ? c.accounts.playerForJoinLink(input.join) : input.playerId!;
+    if (!playerId || !c.hub.player(playerId)) return reply.code(400).send({ error: 'This sign-in link is no longer valid. Sign in with Steam instead.' });
+    const key = `pin:${playerId}`;
+    if (pinAttempts.blocked(key)) return reply.code(429).send({ error: 'Too many wrong PINs. Wait 10 minutes, or sign in with Steam.' });
     if (!c.accounts.checkPin(playerId, input.pin)) {
-      pinAttempts.fail(input.join);
+      pinAttempts.fail(key);
       return reply.code(400).send({ error: 'That PIN is not right.' });
     }
-    pinAttempts.clear(input.join);
+    pinAttempts.clear(key);
     return h.signIn(reply, { kind: 'player', playerId }).send({ ok: true });
   });
+
+  /** Players who set a PIN, so they can sign in by name on another PC. */
+  app.get('/api/auth/pin-players', async (_request, reply) =>
+    reply.send(c.hub.players.filter(p => c.accounts.hasPin(p.id)).map(p => ({ id: p.id, nickname: p.nickname }))));
 
   app.post('/api/auth/admin', async (request, reply) => {
     const input = h.body(adminSignInSchema, request, reply);
@@ -179,10 +184,10 @@ export function authRoutes(app: FastifyInstance, c: AppContext, h: Helpers): voi
 
   app.get('/auth/spotify/start', async (request, reply) => {
     const local = `http://127.0.0.1:${c.port}`;
-    if (!fromHostPc(request)) return reply.code(403).type('text/plain').send('Connect Spotify on the host PC, at ' + `${local}/admin`);
+    if (!fromHostPc(request)) return reply.code(403).type('text/plain').send(`Connect Spotify on the host PC itself: open ${local}/setup there.`);
     if (origin(request) !== local) return reply.redirect(`${local}/auth/spotify/start`);
     const clientId = c.secrets.get('SPOTIFY_CLIENT_ID');
-    if (!clientId) return reply.redirect('/admin?spotify=no-client-id#setup');
+    if (!clientId) return reply.redirect('/setup?spotify=no-client-id#spotify');
     const pkce = createPkce();
     spotifyPending.set(pkce.state, { verifier: pkce.verifier, expires: Date.now() + 10 * 60_000 });
     return reply.redirect(spotifyAuthorizeUrl(clientId, `${local}/auth/spotify/callback`, pkce.challenge, pkce.state));
@@ -193,15 +198,15 @@ export function authRoutes(app: FastifyInstance, c: AppContext, h: Helpers): voi
     const pending = state ? spotifyPending.get(state) : undefined;
     const clientId = c.secrets.get('SPOTIFY_CLIENT_ID');
     if (error || !code || !pending || pending.expires < Date.now() || !clientId) {
-      return reply.redirect(`/admin?spotify=${encodeURIComponent(error ?? 'failed')}#setup`);
+      return reply.redirect(`/setup?spotify=${encodeURIComponent(error ?? 'failed')}#spotify`);
     }
     spotifyPending.delete(state!);
     try {
       await c.spotifyTokens.exchangeCode(clientId, code, `http://127.0.0.1:${c.port}/auth/spotify/callback`, pending.verifier);
     } catch {
-      return reply.redirect('/admin?spotify=failed#setup');
+      return reply.redirect('/setup?spotify=failed#spotify');
     }
     c.hub.resetMusic();
-    return reply.redirect('/admin?spotify=connected#setup');
+    return reply.redirect('/setup?spotify=connected#spotify');
   });
 }
