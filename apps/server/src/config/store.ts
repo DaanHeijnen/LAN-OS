@@ -93,7 +93,8 @@ export class ConfigStore extends EventEmitter<ConfigStoreEvents> {
   update<K extends ConfigName>(name: K, edit: (document: Document) => void): Config[K] {
     const document = this.documents[name].clone();
     edit(document);
-    const text = document.toString();
+    // No padding inside [ ], so one-line lists keep the style the owner wrote.
+    const text = document.toString({ flowCollectionPadding: false });
     const result = parseConfigText(name, text);
     if (!result.ok) throw new ConfigError(result.errors);
     fs.writeFileSync(path.join(this.configDir, `${name}.yaml`), text);

@@ -152,6 +152,13 @@ describe('config store', () => {
     expect(store.get('players').players[1]?.hidden_from_wall).toBe(true);
   });
 
+  it('keeps one-line lists as the owner wrote them', () => {
+    store.loadAll();
+    store.update('wall', document => document.set('night_mode', true));
+    const written = fs.readFileSync(path.join(dir, 'wall.yaml'), 'utf8');
+    expect(written).toBe(template('wall').replace('night_mode: false', 'night_mode: true'));
+  });
+
   it('rejects an invalid admin change without touching the file', () => {
     store.loadAll();
     const before = fs.readFileSync(path.join(dir, 'players.yaml'), 'utf8');

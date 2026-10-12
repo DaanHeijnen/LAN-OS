@@ -53,4 +53,10 @@ Locked decisions for LAN OS. Don't re-ask these; change them only on the owner's
 - **No build step on the server:** Node 22 runs the TypeScript files directly (type stripping), so source files use only erasable TypeScript syntax and import with `.ts` extensions.
 - **Times:** stored in UTC (ISO 8601) in the database. Config files use local `"YYYY-MM-DD HH:MM"` in the event timezone.
 - **Demo mode** uses its own database file, so demo data never mixes with real history.
-- **UI:** Aurora design system first; gaps go in `docs/aurora-gaps.md`.
+- **UI:** there is no separate component library. The approved prototype in `design/prototype/` is the design system: its CSS is copied unchanged into `apps/web/src/styles/` and its markup and class names are ported into React components. Additions live only in `lan-os.css`.
+- **Extra packages** (beyond the locked stack): `@fastify/websocket` (the WebSocket channel), `@vitejs/plugin-react` (React in Vite), and `eslint` + `typescript-eslint` + `eslint-plugin-react-hooks` (for `npm run lint`).
+- **Wall type sizes** follow the prototype's `wall.css` exactly, which is what the screenshots show. `theme.yaml`'s size tokens are generated as CSS variables, but the copied wall styles use fixed pixel sizes, so changing a size in `theme.yaml` doesn't resize the wall yet. Colours, spacing tokens and night mode do follow `theme.yaml` live.
+- **Panels from later milestones** (LAN Radio, polls, activities, Shared Game Finder) show sample data, labelled "sample" or "coming soon". Their buttons explain that instead of pretending to work. "Your last sessions" already uses real data.
+- **Join links** are made by an admin (demo mode makes them automatically). The token is kept in the database so the link can be copied again; making a new link retires the old one.
+- **Admin access:** a signed-in player with `role: admin`, or the `ADMIN_PASSWORD` from `.env`. In demo mode, join links sign in without Steam.
+- **Exit codes:** LAN OS exits with 2 on a config problem (the start file waits for a fix) and 1 on a crash (the start file restarts it after 5 seconds).

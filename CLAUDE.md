@@ -20,11 +20,11 @@ apps/server/        Fastify server. Node 22 runs the .ts files directly (no buil
   src/db/           SQLite: database.ts runs migrations/NNN_*.sql in order
   src/presence/     Steam presence and session tracking
   test/             Vitest tests
-apps/web/           React + Vite: /wall, /app, /admin (Aurora components)
+apps/web/           React + Vite: /wall, /app, /admin. Styles copied from the prototype
 packages/shared/    zod schemas, types and pure logic shared by server and web
 config/             the YAML files the owner edits (+ README.md)
 data/               database, backups, logs, crash reports (git-ignored)
-docs/               requirements, decisions, build plan, Aurora gaps
+docs/               requirements, decisions, build plan, going live
 design/prototype/   the approved design v02 (read-only)
 archive/            old setup docs, kept for context only
 ```
@@ -33,13 +33,16 @@ archive/            old setup docs, kept for context only
 
 - `npm test`: Vitest
 - `npm run typecheck`: TypeScript in every workspace
-- `npm run demo`: run with simulated players and integrations
-- `npm start`: run for real
+- `npm run lint`: ESLint
+- `npm run build`: build the web app into `apps/web/dist` (the server serves it)
+- `npm run demo`: run with simulated players and integrations (`Start LAN OS (demo).bat` on Windows)
+- `npm start`: run for real (`Start LAN OS.bat` on Windows)
+- `npm run dev:web`: Vite dev server with hot reload; run the server alongside it
 
 ## Rules
 
 - Use the locked stack only. Ask before adding any dependency outside it.
-- Aurora first: every UI element comes from Aurora where it exists. Theme it from `config/theme.yaml`. List compositions in `docs/aurora-gaps.md`.
+- The prototype is the design system. Reuse its class names; never edit `apps/web/src/styles/app.css` or `wall.css` (copies of the prototype). Put additions in `lan-os.css`, using theme tokens for colour.
 - Nothing that belongs in config is hardcoded (dates, names, intervals, limits, colours). Secrets go only in `.env`.
 - Every config setting has a comment with what it does, the allowed values and the default. Keep templates in `apps/server/src/config/defaults/` in sync with `config/`.
 - Write imports with `.ts` extensions and use only erasable TypeScript (no `enum`, no parameter properties, no namespaces).

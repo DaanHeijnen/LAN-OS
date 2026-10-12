@@ -130,7 +130,7 @@ LAN OS must run unattended for 72 hours and be set up and maintained by someone 
 | Outages | Small indicator plus the last known state with a timestamp. Local features keep working without internet |
 | Backups | Automatic, periodically during the weekend |
 | Configuration | Readable YAML files, one per topic (event, players, wall, music, voting, activities, announcements, integrations, server, theme). A comment on every setting. Friendly error messages. Hot reload. Admin UI edits write back to the same files. Secrets only in `.env` |
-| UI | Built on the Aurora design system. One click for common actions |
+| UI | Built on the approved prototype design (`design/prototype/`). One click for common actions |
 | Privacy | Registering implies consent to Steam tracking. History and music/vote history are visible to everyone. Players can hide from the wall but can't delete history. All raw data is kept |
 | Security | LAN only. Personal join links, Steam sign-in, per-player PIN, admin password. Trusted-friends approach plus emergency admin tools |
 | Architecture | Balanced: simple enough to maintain, structured enough to grow over future LANs and other groups |

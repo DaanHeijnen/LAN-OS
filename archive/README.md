@@ -6,3 +6,5 @@ Kept for context only. Nothing in here is used by the app or needed to run it.
 | --- | --- |
 | `README-FIRST.md` | The one-time Windows setup guide that came with the design package |
 | `kickoff-prompt.md` | The original build brief for Milestones 0 and 1. Its locked decisions now live in `docs/decisions.md`, and the milestone list in `docs/build-plan.md` |
+
+Note: the kickoff prompt mentions an "Aurora" design system. That doesn't exist for this project; the prototype in `design/prototype/` is the design system (see `docs/decisions.md`).
