@@ -1,4 +1,4 @@
-// The prototype's line icons (design/prototype/assets/app.js), as one component.
+// The line icons used across LAN OS, as one component.
 const PATHS: Record<string, string> = {
   'layout-dashboard': '<rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/>',
   'music-2': '<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>',

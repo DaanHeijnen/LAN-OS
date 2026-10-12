@@ -10,7 +10,7 @@ export type Screen = (typeof SCREENS)[number];
 export interface PlayerCard {
   id: string;
   nickname: string;
-  /** 0–6: which of the prototype's avatar gradients to use. */
+  /** 0–6: which of the avatar gradients to use. */
   tone: number;
   avatarUrl: string | null;
   status: PresenceStatus;

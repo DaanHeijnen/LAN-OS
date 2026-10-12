@@ -33,7 +33,7 @@ describe('theme contrast', () => {
 });
 
 describe('theme CSS', () => {
-  it('generates day and night tokens with the prototype names', () => {
+  it('generates day and night tokens with the wall's token names', () => {
     const css = themeToCss(theme);
     expect(css).toContain('--surface-wall: #0A0F1A;');
     expect(css).toContain('--accent: #B9B3E6;');

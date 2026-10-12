@@ -1,4 +1,4 @@
-// The admin control room (/admin). Markup follows design/prototype/design/templates/admin.html.
+// The admin control room (/admin).
 // On the host PC it always opens; elsewhere it needs an admin player or the admin password.
 import { useEffect, useState } from 'react';
 import {

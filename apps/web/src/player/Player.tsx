@@ -1,4 +1,4 @@
-// The player dashboard (/app). Markup follows design/prototype/design/templates/player.html.
+// The player dashboard (/app).
 import { useCallback, useEffect, useRef, useState, type SyntheticEvent } from 'react';
 import {
   DASHBOARD_PANELS, formatDuration, isJoinable, lanClock, shortDate, STATUS_DISPLAY,

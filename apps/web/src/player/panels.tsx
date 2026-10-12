@@ -1,5 +1,5 @@
 // The right-hand dashboard panels: LAN Radio, Room decisions (polls), Coming up (activities)
-// and Your last sessions. Markup follows the prototype's player template.
+// and Your last sessions.
 import { useEffect, useMemo, useState } from 'react';
 import {
   ACTIVITY_KIND_LABELS, clockTime, formatDuration, shortDate,

@@ -1,7 +1,6 @@
-/* LAN OS additions to the prototype styles (app.css, wall.css are copied unchanged).
-   Only what the prototype hard-codes for its demo or doesn't have yet. Colours come from theme tokens. */
+/* LAN OS additions on top of the base styles (app.css, wall.css, which stay as approved). Colours come from theme tokens. */
 
-/* Avatar gradients. The prototype keys them by demo name (.avatar-mara …); here by roster position. */
+/* Avatar gradients, by roster position. */
 .avatar.tone-0{background:linear-gradient(145deg,#907097,#473b71)}
 .avatar.tone-1{background:linear-gradient(135deg,#3b7a8b,#24425d)}
 .avatar.tone-2{background:linear-gradient(145deg,#a0775d,#614256)}
@@ -21,7 +20,7 @@
 .wall-cover{position:relative;overflow:hidden}
 .wall-cover img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 
-/* Status words the prototype has no colour rule for. */
+/* Status words without a colour rule in the base styles. */
 .wall-status.status-unknown .status-shape,.wall-status.status-unknown .status-label,
 .status-text.status-unknown{color:var(--status-offline)}
 .wall-stale{color:var(--text-quiet);font-size:var(--fs-minimum,22px);margin-left:6px;white-space:nowrap}
@@ -50,7 +49,7 @@ button[aria-disabled=true]{opacity:.55;cursor:not-allowed}
 .sign-in .pin-input{font-size:28px;letter-spacing:.5em;text-align:center}
 .form-error{color:var(--status-looking);font-size:13px;margin:10px 0 0}
 
-/* Real album art replaces the prototype's decorative cover. */
+/* Real album art replaces the decorative cover. */
 .album-cover.has-art,.wall-album.has-art,.album-mini.has-art{background-size:cover;background-position:center}
 .album-cover.has-art:before,.album-cover.has-art:after,.wall-album.has-art:before,.wall-album.has-art:after,
 .album-mini.has-art:before,.album-mini.has-art:after{display:none}
@@ -133,7 +132,7 @@ details.side-poll summary::-webkit-details-marker{display:none}
 .hour-axis{display:flex;gap:2px;margin-top:6px}
 .hour-axis span{flex:1;font-size:10px;color:var(--text-quiet);white-space:nowrap;overflow:visible}
 
-/* Field types the prototype didn't style, matched to its text inputs. */
+/* Field types the base styles don't cover, matched to the text inputs. */
 input:not([type]),input[type=password],input[type=number],input[type=datetime-local]{outline:0;background:#152136;border:1px solid #40506a;
   border-radius:9px;color:var(--text-primary);width:100%;padding:10px 12px;font:inherit;font-size:12px;color-scheme:dark}
 .card-body{padding:0 22px 20px}

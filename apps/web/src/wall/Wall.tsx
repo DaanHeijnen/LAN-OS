@@ -1,5 +1,4 @@
 // The projector wall: a fixed 1920×1080 canvas scaled to fit the screen. Read-only.
-// Markup and class names follow design/prototype/design/templates/wall.html.
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import {
   ACTIVITY_KIND_LABELS, clockTime, eventDateRange, lanClock, STATUS_DISPLAY,

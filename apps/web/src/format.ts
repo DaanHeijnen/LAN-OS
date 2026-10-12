@@ -33,12 +33,12 @@ export function staleLabel(p: PlayerCard, timezone: string): string | null {
   return p.updatedAt ? `stale since ${clockTime(new Date(p.updatedAt), timezone)}` : 'no data yet';
 }
 
-/** "Deep Rock Galactic" → "DR", "Valheim" → "V" (the prototype's cover tiles). */
+/** "Deep Rock Galactic" → "DR", "Valheim" → "V" (the cover tiles). */
 export function gameCode(name: string): string {
   return name.split(/\s+/).filter(w => /^[A-Za-z0-9]/.test(w)).slice(0, 2).map(w => w[0]!.toUpperCase()).join('') || '•';
 }
 
-/** One of the prototype's three cover gradients, picked by name so a game keeps its colour. */
+/** One of the three cover gradients, picked by name so a game keeps its colour. */
 export function gameTone(name: string): '' | 'valheim' | 'rocket' {
   let hash = 0;
   for (const ch of name) hash = (hash * 31 + ch.charCodeAt(0)) >>> 0;

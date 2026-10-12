@@ -1,5 +1,5 @@
 // Small building blocks shared by the player dashboard and the admin page,
-// using the prototype's markup and class names.
+// using the design's markup and class names.
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import { initial } from '../format.ts';
 import { Icon } from './Icon.tsx';

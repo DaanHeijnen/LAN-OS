@@ -1,5 +1,4 @@
 // Turns config/theme.yaml into CSS custom properties and checks colour contrast.
-// Ported from design/prototype/design/build.mjs so the app and the prototype share token names.
 import type { ThemeConfig } from './config/schemas.ts';
 
 type Palette = Record<string, string>;
@@ -36,7 +35,7 @@ export function themeToCss(theme: ThemeConfig): string {
   const lines = [
     declarations(dayPalette(theme)),
     `  --font-family: ${t.font_family};`,
-    // --fs-* are the names in theme.yaml; --wall-* are the prototype's names for the same values.
+    // --fs-* are the names in theme.yaml; --wall-* are the wall's names for the same values.
     ...sizes.map(([fs, wall, px]) => `  --fs-${fs}: ${px}px;\n  --wall-${wall}: ${px}px;`),
     `  --fw-bold: ${t.weight_bold};`,
     `  --space-frame: ${s.space_frame}px;`,

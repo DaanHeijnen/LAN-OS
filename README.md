@@ -24,11 +24,9 @@ Players sign in with their Steam account. LAN Radio uses the host's Spotify Prem
 | `config/` | All settings, as readable YAML files. Start with `config/README.md` |
 | `apps/` | The app itself: `server` and `web` |
 | `packages/shared/` | Code shared by the server and the web app |
-| `docs/` | Going live, requirements, decisions and the build plan |
+| `docs/` | `going-live.md`: how to set up the real LAN |
 | `tools/` | Start-with-Windows on and off |
-| `design/prototype/` | The approved design (reference only) |
 | `data/` | Database, backups and logs, created when LAN OS runs |
-| `archive/` | Old setup notes, kept for context |
 
 ## For developers (PowerShell)
 

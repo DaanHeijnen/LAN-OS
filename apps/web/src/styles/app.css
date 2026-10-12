@@ -1,4 +1,4 @@
-/* Copied unchanged from design/prototype/assets/app.css (approved design v02). Fixes go in lan-os.css, not here. */
+/* LAN OS base styles for the dashboard, admin and setup pages (approved design v02). Leave as is; changes go in lan-os.css. */
 /* LAN OS · Desktop player and admin interfaces.
    The chromatic system lives in generated assets/theme.css. */
 :root{--border:rgba(176,189,210,.115);--border-bright:rgba(176,189,210,.23);--surface-deep:#101a2b;--surface-shallow:#263654;--muted-bg:rgba(176,189,210,.065);--focus:#ddd2ff;--success:var(--status-in-game);--danger:#f0a19a;--font-sm:12px}

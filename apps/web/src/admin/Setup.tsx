@@ -9,7 +9,7 @@ import { Icon } from '../ui/Icon.tsx';
 import '../styles/app.css';
 import '../styles/lan-os.css';
 
-/** The prototype's example roster; offered for removal on a real LAN. */
+/** The example roster shipped in players.yaml; offered for removal on a real LAN. */
 const EXAMPLE_NAMES = ['Mara', 'Joris', 'Sam', 'Nick', 'Alex', 'Lisa', 'Tom'];
 
 /** ISO time → "2026-11-19T19:00" in the event timezone, for <input type="datetime-local">. */
