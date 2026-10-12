@@ -6,6 +6,7 @@
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.133.0",
     "@fastify/websocket": "^11.3.4",
     "@lan-os/shared": "*",
     "better-sqlite3": "^12.11.1",

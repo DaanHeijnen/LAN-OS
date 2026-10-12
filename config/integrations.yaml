@@ -8,11 +8,16 @@ steam_enabled: true
 # How often LAN OS asks Steam for everyone's status. A time from "10s" to "5m". Default: "15s"
 steam_poll_interval: "15s"
 
-# LAN Radio through Spotify (Milestone 2). true or false. Default: false
-spotify_enabled: false
+# LAN Radio through Spotify. Connect the host's Spotify account on the admin page. true or false. Default: true
+spotify_enabled: true
 
-# Discord highlight preview on the wall (a later milestone). true or false. Default: false
+# Discord highlights on the wall: the host picks messages from one channel; the bot only reads, never posts.
+# Needs a bot token (set on the admin page). true or false. Default: false
 discord_enabled: false
 
-# AI-written announcement lines (a later milestone). Without it, LAN OS uses template lines. true or false. Default: false
-ai_enabled: false
+# The Discord channel to read highlights from: its ID between quotes (right-click the channel, Copy Channel ID), or "". Default: ""
+discord_channel_id: ""
+
+# Let an AI write the announcement lines (needs an AI key, set on the admin page). Without it, LAN OS uses
+# its own template lines. true or false. Default: true
+ai_enabled: true

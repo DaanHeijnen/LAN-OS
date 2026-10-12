@@ -78,6 +78,7 @@ export const activitiesSchema = section({
   default_min_players: wholeNumber(1, 32),
   default_max_players: wholeNumber(1, 32),
   reminder_lead_time: duration('1m', '1h'),
+  auto_end_after: duration('15m', '12h'),
 }).superRefine((file, ctx) => {
   if (file.default_max_players < file.default_min_players) {
     ctx.addIssue({ code: 'custom', path: ['default_max_players'], message: 'must be at least default_min_players' });
@@ -101,13 +102,18 @@ export const integrationsSchema = section({
   steam_poll_interval: duration('10s', '5m'),
   spotify_enabled: onOff(),
   discord_enabled: onOff(),
+  discord_channel_id: text('must be a Discord channel ID between quotes, or ""'),
   ai_enabled: onOff(),
 });
 
 export const serverSchema = section({
   port: wholeNumber(1024, 65535),
-  hostname: text('must be a hostname between quotes, like "lan-os.local"'),
+  hostname: z.string({ error: 'must be a name ending in ".local" between quotes, like "lan-os.local"' })
+    .regex(/^[a-z0-9-]{1,40}\.local$/, { error: 'must be a name ending in ".local" between quotes, like "lan-os.local"' }),
   backup_interval: duration('15m', '24h'),
+  backups_to_keep: wholeNumber(1, 500),
+  open_browser: onOff(),
+  announce_hostname: onOff(),
   log_retention: duration('1d', '365d'),
 });
 

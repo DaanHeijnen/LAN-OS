@@ -13,3 +13,6 @@ default_max_players: 7
 # How long before an activity starts the wall countdown and the dashboard reminder appear.
 # A time from "1m" to "1h". Default: "10m"
 reminder_lead_time: "10m"
+
+# An activity nobody ended by hand ends by itself this long after it started. A time from "15m" to "12h". Default: "2h"
+auto_end_after: "2h"

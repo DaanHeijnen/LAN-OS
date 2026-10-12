@@ -39,9 +39,20 @@ export interface RuntimeState {
   wall_paused: boolean;
   wall_message: string | null;
   steam_paused: boolean;
+  /** Safety controls on the admin page. */
+  submissions_disabled: boolean;
+  hide_public: boolean;
+  radio_requests_closed: boolean;
+  /** Discord message IDs the host picked for the wall. */
+  discord_selected: string[];
+  /** LANs whose final recap the host has published. */
+  recap_published: string[];
 }
 
-const RUNTIME_DEFAULTS: RuntimeState = { wall_blanked: false, wall_paused: false, wall_message: null, steam_paused: false };
+const RUNTIME_DEFAULTS: RuntimeState = {
+  wall_blanked: false, wall_paused: false, wall_message: null, steam_paused: false,
+  submissions_disabled: false, hide_public: false, radio_requests_closed: false, discord_selected: [], recap_published: [],
+};
 
 export function getRuntimeState(db: Db): RuntimeState {
   const rows = db.prepare('SELECT key, value FROM runtime_state').all() as Array<{ key: string; value: string }>;

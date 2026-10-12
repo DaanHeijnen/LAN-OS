@@ -5,7 +5,7 @@ import type { ConfigStore } from '../config/store.ts';
 import type { Db } from '../db/database.ts';
 import { appendEvent, upsertLan } from '../db/events.ts';
 import { saveProfile } from '../db/profiles.ts';
-import { DEMO_GAMES, OPENING_AGE_MINUTES } from './demo-steam.ts';
+import { DEMO_GAMES, demoSteamId, OPENING_AGE_MINUTES } from './demo-steam.ts';
 
 /** Which demo game each roster position starts in (matches demo-steam's opening state). */
 const OPENING_GAME: Array<keyof typeof DEMO_GAMES | null> = ['drg', 'drg', 'valheim', 'valheim', 'rocket', null, null];
@@ -40,6 +40,13 @@ export function seedDemo(db: Db, store: ConfigStore, accounts: Accounts, now = n
       appendEvent(db, event.lan_id, 'presence_changed', player.id,
         { status: OPENING_STATUS[index], ...(key ? game(key) : { game: null, app_id: null }) }, since);
       if (!accounts.joinLinkFor(player.id)) accounts.createJoinLink(player.id, now);
+    });
+    // Steam libraries for the Shared Game Finder.
+    const library = [['548430', 'Deep Rock Galactic'], ['892970', 'Valheim'], ['252950', 'Rocket League'], ['730', 'Counter-Strike 2'],
+      ['427520', 'Factorio'], ['105600', 'Terraria'], ['1086940', "Baldur's Gate 3"], ['413150', 'Stardew Valley'], ['620', 'Portal 2']];
+    const insert = db.prepare('INSERT OR REPLACE INTO owned_games (steam_id, app_id, name, fetched_at) VALUES (?, ?, ?, ?)');
+    players.forEach((_, i) => {
+      library.filter((_, g) => (g + i) % 3 !== 0 || g < 2).forEach(([appId, name]) => insert.run(demoSteamId(i), appId, name, now.toISOString()));
     });
     // Nick is looking for players in the design.
     if (players[3]) saveProfile(db, event.lan_id, players[3].id, { looking: true }, now);

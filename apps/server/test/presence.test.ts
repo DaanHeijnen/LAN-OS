@@ -113,3 +113,30 @@ describe('joinable links', () => {
     expect(isJoinable(buildSteamLink({ steamid: ID }))).toBe(false);
   });
 });
+
+describe('Steam profiles without an API key', async () => {
+  const { parseProfileXml } = await import('../src/presence/steam-community.ts');
+  const profile = (body: string) => `<?xml version="1.0"?><profile><steamID64>${ID}</steamID64><steamID><![CDATA[Mara]]></steamID>${body}<avatarFull><![CDATA[https://a/full.jpg]]></avatarFull></profile>`;
+
+  it('reads a player in a game', () => {
+    const xml = profile(`<onlineState>in-game</onlineState><stateMessage><![CDATA[In-Game<br/>Valheim]]></stateMessage>
+      <inGameServerIP>192.168.1.42:2456</inGameServerIP>
+      <inGameInfo><gameName><![CDATA[Valheim]]></gameName><gameLink><![CDATA[https://steamcommunity.com/app/892970]]></gameLink></inGameInfo>`);
+    expect(parseProfileXml(ID, xml)).toEqual({
+      steamid: ID, personaname: 'Mara', avatarfull: 'https://a/full.jpg', personastate: 1,
+      gameextrainfo: 'Valheim', gameid: '892970', gameserverip: '192.168.1.42:2456',
+    });
+  });
+  it('reads online, away and offline', () => {
+    expect(parseProfileXml(ID, profile('<onlineState>online</onlineState><stateMessage><![CDATA[Online]]></stateMessage>')).personastate).toBe(1);
+    expect(parseProfileXml(ID, profile('<onlineState>online</onlineState><stateMessage><![CDATA[Away]]></stateMessage>')).personastate).toBe(3);
+    const offline = parseProfileXml(ID, profile('<onlineState>offline</onlineState><stateMessage><![CDATA[Last Online 3 hrs ago]]></stateMessage>'));
+    expect(offline.personastate).toBe(0);
+    expect(offline.gameid).toBeUndefined();
+  });
+  it('feeds the same presence rules as the Web API', () => {
+    const xml = profile(`<onlineState>in-game</onlineState><inGameInfo><gameName><![CDATA[Factorio]]></gameName><gameLink><![CDATA[https://steamcommunity.com/app/427520]]></gameLink></inGameInfo>`);
+    expect(derivePresence({ summary: parseProfileXml(ID, xml), steamReachable: true, manualGame: null }))
+      .toEqual({ status: 'in_game', game: { name: 'Factorio', appId: '427520' } });
+  });
+});

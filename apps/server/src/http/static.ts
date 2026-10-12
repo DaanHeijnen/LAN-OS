@@ -20,7 +20,7 @@ export function serveWebApp(app: FastifyInstance, distDir: string): void {
         .header('Cache-Control', immutable ? 'public, max-age=31536000, immutable' : 'no-cache')
         .send(fs.createReadStream(file));
     }
-    if (/^\/(wall|app|admin)(\/|$)/.test(urlPath)) {
+    if (/^\/(wall|app|admin|setup|recap)(\/|$)/.test(urlPath)) {
       if (!fs.existsSync(index)) {
         return reply.code(503).type('text/plain').send('The web app is not built yet. Run "npm run build", then start LAN OS again.');
       }
