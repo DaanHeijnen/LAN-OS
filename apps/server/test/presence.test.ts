@@ -86,8 +86,10 @@ describe('session tracking', () => {
 
   it('continues a session that was running before a restart', () => {
     const tracker = new PresenceTracker();
-    tracker.restore([{ playerId: 'sam', game: { name: 'Valheim', appId: '892970' }, startedAt: t0.toISOString() }], later(300));
-    tracker.update('sam', inGame('Valheim', '892970'), null, later(400));
+    const valheimGame = { name: 'Valheim', appId: '892970' };
+    tracker.restore([{ playerId: 'sam', status: 'in_game', statusSince: t0.toISOString(), game: valheimGame,
+      session: { game: valheimGame, startedAt: t0.toISOString() }, lastKnownGame: valheimGame }]);
+    expect(tracker.update('sam', inGame('Valheim', '892970'), null, later(400))).toEqual([]);
     expect(formatDuration(sessionSeconds(tracker.get('sam')!.session!, later(400)))).toBe('6h 40m');
   });
 });

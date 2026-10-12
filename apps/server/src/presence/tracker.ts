@@ -22,10 +22,14 @@ export interface TrackerEvent {
   data: Record<string, unknown>;
 }
 
-export interface OpenSession {
+/** A player's state rebuilt from the event log after a restart. */
+export interface RestoredPlayer {
   playerId: string;
-  game: Game;
-  startedAt: string;
+  status: Exclude<PresenceStatus, 'hidden' | 'unknown'>;
+  statusSince: string;
+  game: Game | null;
+  session: { game: Game; startedAt: string } | null;
+  lastKnownGame: Game | null;
 }
 
 const sameGame = (a: Game | null, b: Game | null) =>
@@ -37,12 +41,12 @@ export const sessionSeconds = (session: { startedAt: string }, now: Date) =>
 export class PresenceTracker {
   private states = new Map<string, PlayerLiveState>();
 
-  /** After a restart: continue sessions that were still running according to the event log. */
-  restore(open: OpenSession[], now: Date): void {
-    for (const s of open) {
-      this.states.set(s.playerId, {
-        status: 'unknown', statusSince: now.toISOString(), game: s.game, session: { game: s.game, startedAt: s.startedAt },
-        lastKnownGame: s.game, link: null, updatedAt: null,
+  /** After a restart: show the last known state and continue sessions that were still running. */
+  restore(players: RestoredPlayer[]): void {
+    for (const p of players) {
+      this.states.set(p.playerId, {
+        status: p.status, statusSince: p.statusSince, game: p.game, session: p.session,
+        lastKnownGame: p.lastKnownGame, link: null, updatedAt: p.statusSince,
       });
     }
   }
@@ -90,7 +94,7 @@ export class PresenceTracker {
     const prevKnownStatus = prev?.status === 'unknown' ? null : prev?.status;
     const statusChanged = prevKnownStatus !== next.status;
     if (statusChanged || !sameGame(prev?.game ?? null, next.game)) {
-      events.push({ type: 'presence_changed', playerId, at, data: { status: next.status, game: next.game?.name ?? null } });
+      events.push({ type: 'presence_changed', playerId, at, data: { status: next.status, game: next.game?.name ?? null, app_id: next.game?.appId ?? null } });
     }
 
     this.states.set(playerId, {

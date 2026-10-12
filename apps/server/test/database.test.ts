@@ -37,3 +37,27 @@ describe('database', () => {
     expect(listEvents(db, 'lan-2027')).toHaveLength(1);
   });
 });
+
+describe('presence history', () => {
+  it('restores the last status, open sessions and the last game played', async () => {
+    const { restorePresence, recentSessions } = await import('../src/presence/history.ts');
+    const db = openDatabase(':memory:');
+    upsertLan(db, event2026);
+    const at = (h: number) => new Date(Date.UTC(2026, 10, 20, h));
+    appendEvent(db, 'lan-2026', 'game_session_started', 'tom', { game: 'Counter-Strike 2', app_id: '730' }, at(10));
+    appendEvent(db, 'lan-2026', 'presence_changed', 'tom', { status: 'in_game', game: 'Counter-Strike 2', app_id: '730' }, at(10));
+    appendEvent(db, 'lan-2026', 'game_session_ended', 'tom', { game: 'Counter-Strike 2', app_id: '730', seconds: 7200 }, at(12));
+    appendEvent(db, 'lan-2026', 'presence_changed', 'tom', { status: 'offline', game: null }, at(12));
+    appendEvent(db, 'lan-2026', 'game_session_started', 'sam', { game: 'Valheim', app_id: '892970' }, at(11));
+    appendEvent(db, 'lan-2026', 'presence_changed', 'sam', { status: 'in_game', game: 'Valheim', app_id: '892970' }, at(11));
+
+    const restored = Object.fromEntries(restorePresence(db, 'lan-2026').map(p => [p.playerId, p]));
+    expect(restored.tom).toMatchObject({ status: 'offline', statusSince: at(12).toISOString(), session: null, lastKnownGame: { name: 'Counter-Strike 2' } });
+    expect(restored.sam).toMatchObject({ status: 'in_game', session: { startedAt: at(11).toISOString() }, game: { name: 'Valheim', appId: '892970' } });
+
+    expect(recentSessions(db, 'lan-2026', 'tom', at(13))).toEqual([
+      { game: 'Counter-Strike 2', startedAt: at(10).toISOString(), endedAt: at(12).toISOString(), seconds: 7200 },
+    ]);
+    expect(recentSessions(db, 'lan-2026', 'sam', at(13))[0]).toMatchObject({ game: 'Valheim', endedAt: null, seconds: 7200 });
+  });
+});
