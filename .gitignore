@@ -1,0 +1,17 @@
+# Installed packages
+node_modules/
+
+# Build output
+dist/
+*.tsbuildinfo
+
+# Runtime data: database, backups, logs, crash reports (never hand-edited)
+data/*
+!data/README.md
+
+# Secrets
+.env
+
+# OS / editor clutter
+.DS_Store
+Thumbs.db

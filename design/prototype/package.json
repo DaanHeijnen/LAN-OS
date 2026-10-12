@@ -1,0 +1,11 @@
+{
+  "name": "lan-os-frontend-prototype",
+  "private": true,
+  "version": "0.2.0",
+  "type": "module",
+  "description": "LAN OS projector, player, admin interface design prototype",
+  "scripts": {
+    "build": "node design/build.mjs",
+    "preview": "node preview.mjs"
+  }
+}

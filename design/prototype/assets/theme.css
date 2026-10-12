@@ -1,0 +1,44 @@
+/* Generated from config/theme.yaml. Edit YAML and run node design/build.mjs. */
+:root {
+  --surface-wall: #0A0F1A;
+  --surface-card: #1E2A43;
+  --surface-raised: #30406A;
+  --text-primary: #E9EFF8;
+  --text-secondary: #B0BDD2;
+  --text-quiet: #8996B0;
+  --status-in-game: #70C49A;
+  --status-desktop: #6BA8E6;
+  --status-away: #DDAA48;
+  --status-offline: #8A97AE;
+  --status-hidden: #C79AB4;
+  --status-looking: #EA9266;
+  --accent: #B9B3E6;
+  --font-family: Segoe UI Variable, Segoe UI, system-ui, sans-serif;
+  --wall-clock: 72px;
+  --wall-headline: 56px;
+  --wall-duration: 40px;
+  --wall-name: 32px;
+  --wall-body: 28px;
+  --wall-secondary: 24px;
+  --wall-minimum: 22px;
+  --space-frame: 32px;
+  --space-gap: 24px;
+  --radius-card: 20px;
+  --radius-group: 28px;
+  --radius-pill: 99px;
+}
+:root[data-theme="night"] {
+  --surface-wall: #08080A;
+  --surface-card: #232631;
+  --surface-raised: #404259;
+  --text-primary: #D3D1C2;
+  --text-secondary: #B8ACAA;
+  --text-quiet: #A0959A;
+  --status-in-game: #7BB78E;
+  --status-desktop: #7AA2CE;
+  --status-away: #D5A24A;
+  --status-offline: #91929E;
+  --status-hidden: #C898A6;
+  --status-looking: #E18F64;
+  --accent: #B9A5B4;
+}
