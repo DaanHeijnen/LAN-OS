@@ -1,0 +1,51 @@
+/* LAN OS additions to the prototype styles (app.css, wall.css are copied unchanged).
+   Only what the prototype hard-codes for its demo or doesn't have yet. Colours come from theme tokens. */
+
+/* Avatar gradients. The prototype keys them by demo name (.avatar-mara …); here by roster position. */
+.avatar.tone-0{background:linear-gradient(145deg,#907097,#473b71)}
+.avatar.tone-1{background:linear-gradient(135deg,#3b7a8b,#24425d)}
+.avatar.tone-2{background:linear-gradient(145deg,#a0775d,#614256)}
+.avatar.tone-3{background:linear-gradient(135deg,#648b65,#344866)}
+.avatar.tone-4{background:linear-gradient(145deg,#856b99,#423f6e)}
+.avatar.tone-5{background:linear-gradient(140deg,#b08067,#705573)}
+.avatar.tone-6{background:linear-gradient(145deg,#596574,#344256)}
+.wall-avatar.tone-0{background:linear-gradient(135deg,#91759b,#453e68)}
+.wall-avatar.tone-1{background:linear-gradient(145deg,#43899b,#2d425f)}
+.wall-avatar.tone-2{background:linear-gradient(140deg,#bc805f,#55435d)}
+.wall-avatar.tone-3{background:linear-gradient(140deg,#6b9067,#384666)}
+.wall-avatar.tone-4{background:linear-gradient(140deg,#7f6ba2,#4c446c)}
+.wall-avatar.tone-5{background:linear-gradient(140deg,#b28b6e,#665276)}
+.wall-avatar.tone-6,.wall-avatar.private{background:linear-gradient(140deg,#647084,#38445d)}
+.avatar img,.wall-avatar img{width:100%;height:100%;object-fit:cover;border-radius:inherit}
+.wall-avatar{overflow:hidden}
+.wall-cover{position:relative;overflow:hidden}
+.wall-cover img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+
+/* Status words the prototype has no colour rule for. */
+.wall-status.status-unknown .status-shape,.wall-status.status-unknown .status-label,
+.status-text.status-unknown{color:var(--status-offline)}
+.wall-stale{color:var(--text-quiet);font-size:var(--fs-minimum,22px);margin-left:6px;white-space:nowrap}
+
+/* Wall: blanked by an admin = a black screen. */
+.wall-blank{position:fixed;inset:0;background:#000;z-index:100}
+.wall-page .wall-stage{background:var(--surface-wall)}
+.wall-reconnecting{position:absolute;right:36px;bottom:12px;font-size:var(--fs-minimum,22px);color:var(--text-quiet)}
+
+/* "Coming soon": panels that show demo data until their milestone. */
+.coming-soon-pill{color:var(--text-quiet)}
+.later-hint{font-size:10px;letter-spacing:.08em;font-weight:760;color:var(--text-quiet);margin-left:6px;text-transform:uppercase}
+button[aria-disabled=true]{opacity:.55;cursor:not-allowed}
+
+/* Admin roster editing. */
+.people-table input,.people-table select{min-height:32px;padding:4px 8px;font-size:12px;max-width:150px}
+.people-actions{display:flex;gap:6px;align-items:center;justify-content:flex-end;flex-wrap:wrap}
+.crash-row{display:flex;flex-direction:column;gap:2px;padding:10px 0;border-top:1px solid var(--border)}
+.crash-row small{color:var(--text-quiet)}
+.config-problem{color:var(--status-away);font-size:12px;margin:6px 0 0}
+
+/* Sign-in pages. */
+.sign-in{max-width:420px;margin:12vh auto;padding:0 20px}
+.sign-in .card{padding:28px}
+.sign-in h1{margin:6px 0 10px;font-size:28px;letter-spacing:-.03em}
+.sign-in .pin-input{font-size:28px;letter-spacing:.5em;text-align:center}
+.form-error{color:var(--status-looking);font-size:13px;margin:10px 0 0}

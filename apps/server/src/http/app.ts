@@ -2,7 +2,7 @@
 import crypto from 'node:crypto';
 import websocket from '@fastify/websocket';
 import Fastify, { type FastifyReply, type FastifyRequest } from 'fastify';
-import { z } from 'zod';
+import type { z } from 'zod';
 import {
   adminSignInSchema, clientMessageSchema, dashboardLayoutSchema, myStatusSchema, newPlayerSchema, pinSchema,
   pinSignInSchema, playerFieldsSchema, SCREENS, steamPauseSchema, themeToCss, wallMessageSchema, wallSettingsSchema,

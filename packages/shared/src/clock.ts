@@ -7,6 +7,7 @@ export interface LanClock {
   phase: 'before' | 'live' | 'over';
   day: number;
   totalDays: number;
+  /** Before the LAN: until it starts. During: until it ends. */
   hoursLeft: number;
   minutesLeft: number;
 }
@@ -16,11 +17,10 @@ export function lanClock(event: EventInfo, now: Date): LanClock {
   const end = Date.parse(event.endsAt);
   const t = now.getTime();
   const totalDays = Math.max(1, Math.ceil((end - start) / (24 * HOUR)));
-  const leftMs = Math.max(0, end - t);
-  const base = { totalDays, hoursLeft: Math.floor(leftMs / HOUR), minutesLeft: Math.floor((leftMs % HOUR) / 60_000) };
-  if (t < start) return { phase: 'before', day: 0, ...base };
-  if (t >= end) return { phase: 'over', day: totalDays, ...base, hoursLeft: 0, minutesLeft: 0 };
-  return { phase: 'live', day: Math.min(totalDays, Math.floor((t - start) / (24 * HOUR)) + 1), ...base };
+  const left = (ms: number) => ({ hoursLeft: Math.floor(ms / HOUR), minutesLeft: Math.floor((ms % HOUR) / 60_000) });
+  if (t < start) return { phase: 'before', day: 0, totalDays, ...left(start - t) };
+  if (t >= end) return { phase: 'over', day: totalDays, totalDays, ...left(0) };
+  return { phase: 'live', day: Math.min(totalDays, Math.floor((t - start) / (24 * HOUR)) + 1), totalDays, ...left(end - t) };
 }
 
 const parts = (iso: string, timezone: string) => {

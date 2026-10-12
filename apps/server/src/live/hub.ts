@@ -51,7 +51,6 @@ export class LiveHub {
   private pollTimer: NodeJS.Timeout | undefined;
   private polling = false;
   private steamError: string | null = null;
-  private lastSteamSuccess: Date | null = null;
   private announcement: { text: string; kind: 'major' | 'minor'; until: number } | null = null;
   private everyoneInSameGame: string | null = null;
   private themeVersion = 1;
@@ -144,7 +143,6 @@ export class LiveHub {
           const list = ids.length ? await this.o.source.fetchSummaries(ids) : [];
           this.summaries = new Map(list.map(s => [s.steamid, s]));
           this.steamError = null;
-          this.lastSteamSuccess = this.now();
         } catch (error) {
           reachable = false;
           const message = error instanceof Error ? error.message : String(error);
@@ -338,9 +336,5 @@ export class LiveHub {
       ? { level: 'warning', label: 'Server', detail: `${problems} config file${problems > 1 ? 's have' : ' has'} a problem` }
       : { level: 'ok', label: 'Server', detail: 'Healthy' };
     return { steam, spotify, server };
-  }
-
-  get lastSteamUpdate(): Date | null {
-    return this.lastSteamSuccess;
   }
 }
