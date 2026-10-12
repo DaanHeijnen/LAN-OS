@@ -1,16 +1,8 @@
 # LAN OS: notes for Claude Code
 
-A local web app for a 3-day LAN weekend with about 7 friends. It runs on one Windows host PC and has three screens: the projector **wall** (`/wall`), the **player dashboard** (`/app`) and the **admin** page (`/admin`).
+A local web app for a LAN weekend with about 7 friends. It runs on one Windows host PC and serves the projector **wall** (`/wall`), the **player dashboard** (`/app`), the **admin** page (`/admin`), first-run **setup** (`/setup`) and **LAN Wrapped** (`/recap`).
 
 The owner is not a developer and works in VS Code on Windows. Write for a beginner, and give PowerShell commands, not bash.
-
-## Read first
-
-1. `docs/build-plan.md`: what's done and what's next
-2. `docs/decisions.md`: locked decisions; don't re-ask them
-3. `docs/requirements.md`: what to build
-4. `design/prototype/`: how it looks (screenshots in `screenshots/`). **Reference only; never edit it.**
-5. `config/README.md`: the config files
 
 ## Layout
 
@@ -19,7 +11,7 @@ apps/server/        Fastify server. Node 22 runs the .ts files directly (no buil
   src/config/       config loading, validation, hot reload, write-back; defaults/ = templates
   src/db/           SQLite: database.ts runs migrations/NNN_*.sql in order
   src/presence/     Steam presence (Web API or public profiles) and session tracking
-  src/radio/        LAN Radio: Spotify, fair queue
+  src/radio/        LAN Radio: Spotify (PKCE), fair queue
   src/polls/        polls and activities
   src/announce/     wall announcements (templates + optional AI)
   src/history/      LAN Wrapped, HTML export, Shared Game Finder
@@ -27,32 +19,30 @@ apps/server/        Fastify server. Node 22 runs the .ts files directly (no buil
   src/live/hub.ts   owns all services and builds each screen's snapshot
   src/demo/         pretend Steam and Spotify, demo seed
   test/             Vitest tests
-apps/web/           React + Vite: /wall, /app, /admin, /setup, /recap. Styles copied from the prototype
+apps/web/           React + Vite: /wall, /app, /admin, /setup, /recap
 packages/shared/    zod schemas, types and pure logic shared by server and web
 config/             the YAML files the owner edits (+ README.md)
-data/               database, backups, logs, crash reports (git-ignored)
-docs/               requirements, decisions, build plan, going live
+data/               database, backups, logs, crash reports, Spotify sign-in (git-ignored)
+docs/going-live.md  owner's guide for the real LAN
 tools/              start-with-Windows scripts
-design/prototype/   the approved design v02 (read-only)
-archive/            old setup docs, kept for context only
 ```
 
 ## Commands
 
-- `npm test`: Vitest
-- `npm run typecheck`: TypeScript in every workspace
-- `npm run lint`: ESLint
+- `npm test`, `npm run typecheck`, `npm run lint`
 - `npm run build`: build the web app into `apps/web/dist` (the server serves it)
-- `npm run demo`: run with simulated players and integrations (`Start LAN OS (demo).bat` on Windows); add `-- --no-browser` to skip opening a browser
-- `npm start`: run for real (`Start LAN OS.bat` on Windows)
+- `npm run demo` / `npm start` (on Windows: the two `Start LAN OS*.bat` files). Add `-- --no-browser` to skip opening a browser.
 - `npm run dev:web`: Vite dev server with hot reload; run the server alongside it
 
 ## Rules
 
-- Use the locked stack only. Ask before adding any dependency outside it.
-- The prototype is the design system. Reuse its class names; never edit `apps/web/src/styles/app.css` or `wall.css` (copies of the prototype). Put additions in `lan-os.css`, using theme tokens for colour.
-- Nothing that belongs in config is hardcoded (dates, names, intervals, limits, colours). Secrets go only in `.env`.
-- Every config setting has a comment with what it does, the allowed values and the default. Keep templates in `apps/server/src/config/defaults/` in sync with `config/`.
+- Stack: Node 22, strict TypeScript, Fastify + one WebSocket channel, better-sqlite3 with plain SQL migrations, React + Vite, zod, `yaml` (Document API), Vitest. Ask before adding packages.
+- Styles: `apps/web/src/styles/app.css` and `wall.css` are the approved design; don't edit them. Reuse their class names and put additions in `lan-os.css`, with colours from theme tokens. Wall text is never smaller than 22px.
+- Nothing that belongs in config is hardcoded (dates, names, intervals, limits, colours). Every config setting has a comment with what it does, the allowed values and the default. Keep `apps/server/src/config/defaults/` in sync with `config/`.
+- Secrets live only in `.env`, which the setup page writes. Never log or commit them.
 - Write imports with `.ts` extensions and use only erasable TypeScript (no `enum`, no parameter properties, no namespaces).
-- The `events` table is append-only. Ask before changing the schema with a new migration.
-- Commit after each step. Run tests and typecheck before calling a milestone done.
+- The `events` table is append-only (admins may only remove wrong rows). Schema changes go in a new migration; ask first.
+- The host PC (requests from 127.0.0.1) is always admin. Spotify sign-in only works there (Spotify requires the 127.0.0.1 redirect).
+- Steam presence reads public data only. "Game details: Friends only" is not visible to LAN OS.
+- No sound from the wall. Status always shows as colour + icon + word.
+- Commit after each step. Run tests, typecheck and lint before calling work done.
