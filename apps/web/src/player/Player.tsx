@@ -12,6 +12,7 @@ import { Icon, type IconName } from '../ui/Icon.tsx';
 import { AllSystems, Shell, TopAvatar } from '../ui/Shell.tsx';
 import { ActivitiesPanel, ActivityModal, HistoryPanel, PollModal, PollsPanel, RadioPanel, SongModal, type Panel } from './panels.tsx';
 import { useSignedIn } from './SignIn.tsx';
+import { TournamentPanel } from './tournament.tsx';
 import '../styles/app.css';
 import '../styles/lan-os.css';
 
@@ -106,6 +107,7 @@ export default function Player() {
         snapshot={snapshot} now={now} sectionLabel="YOUR SPACE" breadcrumb="PLAYER DASHBOARD"
         nav={[
           { href: '#overview', icon: 'layout-dashboard', label: 'Overview' },
+          ...(snapshot.tournament && snapshot.tournament.state !== 'setup' ? [{ href: '#tournament', icon: 'trophy' as IconName, label: 'Tournament' }] : []),
           { href: '#radio', icon: 'music-2', label: 'LAN Radio', count: snapshot.radio.queue.length },
           { href: '#polls', icon: 'chart-no-axes-column', label: 'Polls & activities', ...(openPolls ? { count: openPolls } : {}) },
           { href: '#game-finder', icon: 'gamepad-2', label: 'Games & friends' },
@@ -140,6 +142,7 @@ export default function Player() {
           {snapshot.recapPublished && <div className="fair-note recap-ready"><Icon name="history" /> LAN Wrapped is ready. <a className="text-button" href="/recap">See the weekend in numbers <Icon name="arrow-right" /></a></div>}
           <div className="player-layout">
             <div className="player-primary">
+              <TournamentPanel snapshot={snapshot} me={me} now={now} />
               <Roster snapshot={snapshot} me={me} now={now} onEditStatus={() => setModal('status')} onDetails={id => setModal({ player: id })} />
               <GameFinder snapshot={snapshot} />
             </div>
