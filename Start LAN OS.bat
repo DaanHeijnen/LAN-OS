@@ -3,17 +3,17 @@ rem Double-click to start LAN OS. Keep this window open while LAN OS runs; close
 title LAN OS
 cd /d "%~dp0"
 
-where node >nul 2>nul
+rem Use this PC's Node.js if it is new enough; otherwise use (or download) LAN OS's own copy in runtime\node.
+call :checknode
 if errorlevel 1 (
-  echo Node.js is not installed. Install Node.js 22 LTS from https://nodejs.org and double-click this file again.
-  pause
-  exit /b 1
-)
-node -e "const [a,b]=process.versions.node.split('.').map(Number);process.exit(a>22||(a===22&&b>=18)?0:1)"
-if errorlevel 1 (
-  echo Your Node.js is too old. Install the latest Node.js 22 LTS from https://nodejs.org and try again.
-  pause
-  exit /b 1
+  if not exist runtime\node\node.exe (
+    echo First start: downloading Node.js for LAN OS. Nothing is installed on Windows.
+    powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0tools\get-node.ps1"
+    if errorlevel 1 goto nonode
+  )
+  set "PATH=%~dp0runtime\node;%PATH%"
+  call :checknode
+  if errorlevel 1 goto nonode
 )
 
 if not exist node_modules (
@@ -40,9 +40,20 @@ echo Restarting in 5 seconds...
 timeout /t 5 /nobreak >nul
 goto run
 
+:nonode
+echo.
+echo Could not get Node.js. Check that this PC is online, then double-click this file again.
+pause
+exit /b 1
+
+:checknode
+node -e "const [a,b]=process.versions.node.split('.').map(Number);process.exit(a>22||(a===22&&b>=18)?0:1)" >nul 2>nul
+exit /b %errorlevel%
+
 :failed
 echo.
 echo Something went wrong while installing or preparing LAN OS. Scroll up to read the message.
 pause
+exit /b 1
 
 :end

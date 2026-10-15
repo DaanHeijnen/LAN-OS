@@ -120,9 +120,8 @@ Every game session, song, vote and activity is saved. LAN Wrapped turns it into 
 
 ## Get started
 
-1. Install **Node.js 22 LTS** from nodejs.org.
-2. Double-click **`Start LAN OS (demo).bat`** to look around, or **`Start LAN OS.bat`** for the real thing.
-3. For the real LAN, follow **`docs/going-live.md`**.
+1. Double-click **`Start LAN OS (demo).bat`** to look around, or **`Start LAN OS.bat`** for the real thing. No installing needed: the first start downloads everything it needs (including its own Node.js, if the PC doesn't have Node.js 22) and takes a few minutes.
+2. For the real LAN, follow **`docs/going-live.md`**.
 
 Players' Steam profiles and **Game details** must be set to **Public**, so LAN OS can see what they're playing.
 

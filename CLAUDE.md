@@ -24,7 +24,8 @@ packages/shared/    zod schemas, types and pure logic shared by server and web
 config/             the YAML files the owner edits (+ README.md)
 data/               database, backups, logs, crash reports, Spotify sign-in (git-ignored)
 docs/going-live.md  owner's guide for the real LAN
-tools/              start-with-Windows scripts
+tools/              start-with-Windows scripts, get-node.ps1 (private Node.js download)
+runtime/            private Node.js used when the PC has none (git-ignored)
 ```
 
 ## Commands

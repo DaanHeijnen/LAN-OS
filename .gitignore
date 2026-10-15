@@ -14,3 +14,6 @@ data/
 # OS / editor clutter
 .DS_Store
 Thumbs.db
+
+# Private Node.js that "Start LAN OS.bat" downloads when the PC has none
+runtime/

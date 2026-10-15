@@ -4,10 +4,9 @@ Everything is set up inside LAN OS. You don't need to edit any files.
 
 ## 1. Start LAN OS on the host PC
 
-1. Install **Node.js 22 LTS** from nodejs.org (default options).
-2. Double-click **`Start LAN OS.bat`**. The first time, it installs itself (about a minute).
-3. Windows may ask whether Node.js may use the network. Choose **Private networks** and click **Allow**. Without that, the other PCs can't reach LAN OS.
-4. Your browser opens the **setup page**. Keep the black window open while LAN OS runs.
+1. Double-click **`Start LAN OS.bat`**. The first time it sets itself up (a few minutes, needs internet). If the PC has no Node.js 22, it downloads its own copy into the `runtime` folder; nothing gets installed on Windows.
+2. Windows may ask whether Node.js may use the network. Choose **Private networks** and click **Allow**. Without that, the other PCs can't reach LAN OS.
+3. Your browser opens the **setup page**. Keep the black window open while LAN OS runs.
 
 ## 2. The setup page (on the host PC)
 
