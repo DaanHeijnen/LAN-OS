@@ -8,6 +8,7 @@ import { cardDuration, cardGame, gameCode, gameTone, initial, mmss, staleLabel }
 import { useLive, useNow } from '../live.ts';
 import { groupRoster } from '../roster.ts';
 import { AlbumArt, livePosition } from '../player/panels.tsx';
+import { TournamentWall } from './TournamentWall.tsx';
 import '../styles/wall.css';
 import '../styles/lan-os.css';
 
@@ -94,7 +95,8 @@ function WallCanvas({ snapshot, now, connected }: { snapshot: LiveSnapshot; now:
         </div>
       </header>
 
-      <main className="wall-main">
+      {snapshot.tournament && snapshot.tournament.state !== 'setup' ? <TournamentWall snapshot={snapshot} tournament={snapshot.tournament} now={now} />
+        : <main className="wall-main">
         <section className="room-panel" aria-label="Players in the room">
           <div className="wall-section-title">
             <h1>In the room</h1>
@@ -116,7 +118,7 @@ function WallCanvas({ snapshot, now, connected }: { snapshot: LiveSnapshot; now:
             : panel === 'poll' ? <PollPanel key={panel} snapshot={snapshot} now={now} />
               : <ActivityPanel key={panel} snapshot={snapshot} now={now} />)}
         </section>
-      </main>
+      </main>}
 
       {announcement && (
         <div className={`wall-announcement ${announcement.kind === 'major' ? 'major' : ''}`} aria-live="polite">

@@ -191,3 +191,74 @@ button.bingo-square:disabled{cursor:not-allowed}
 .lineup-number .icon{width:12px;height:12px}
 .lineup-round{color:var(--text-quiet)!important}
 @media(max-width:900px){.tournament-columns{grid-template-columns:1fr}}
+
+/* Wall during a tournament (1920×1080 canvas; text never below 22px). */
+.twall{height:calc(100% - 78px);display:flex;flex-direction:column;gap:18px;min-height:0}
+.twall-body{flex:1;min-height:0;display:grid;grid-template-columns:1080px minmax(0,1fr);gap:25px}
+.twall-side{display:flex;flex-direction:column;gap:18px;min-height:0;min-width:0}
+.twall-soft{font-size:24px;color:var(--text-secondary);margin:0}
+.twall-scores{display:flex;flex-direction:column;min-height:0}
+.twall-rows{flex:1;display:grid;gap:8px;min-height:0;align-content:start}
+.twall-row{display:grid;grid-template-columns:52px 61px minmax(0,1fr) 270px 180px;align-items:center;gap:16px;background:var(--surface-raised);border-radius:15px;padding:0 22px 0 18px;min-height:0;height:100%;max-height:104px}
+.twall-row.leader{box-shadow:inset 0 0 0 2px var(--accent)}
+.twall-place{font-size:40px;font-weight:820;color:var(--text-secondary);text-align:center}
+.twall-name{font-size:32px;font-weight:790;letter-spacing:-.025em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.twall-name small{display:block;font-size:22px;color:var(--text-secondary);font-weight:600;letter-spacing:0}
+.twall-delta{font-size:30px;color:var(--status-in-game);font-weight:780;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.twall-delta small{font-size:22px;color:var(--text-secondary);font-weight:600}
+.twall-points{font-size:48px;font-weight:830;text-align:right;letter-spacing:-.045em;white-space:nowrap}
+.twall-points small{font-size:22px;color:var(--text-secondary);letter-spacing:.04em}
+.twall-live{flex:none}
+.twall-game-title{font-size:54px;font-weight:790;letter-spacing:-.05em;margin:0 0 12px;line-height:1.05;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.twall-round{display:flex;gap:16px;font-size:24px;padding:10px 0;border-top:1px solid rgba(176,189,210,.15);white-space:nowrap;min-width:0}
+.twall-round b{color:var(--accent)}
+.twall-round span{overflow:hidden;text-overflow:ellipsis}
+.twall-lineup{flex:1;min-height:0}
+.twall-lineup-row{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:14px;align-items:center;font-size:28px;padding:9px 0;border-top:1px solid rgba(176,189,210,.12);min-width:0}
+.twall-lineup-row b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.twall-lineup-row>span:last-child{font-size:22px;color:var(--text-secondary);white-space:nowrap;max-width:300px;overflow:hidden;text-overflow:ellipsis}
+.twall-lineup-row.live b,.twall-lineup-row.live>span:last-child{color:var(--accent);font-weight:780}
+.twall-lineup-row.finished{opacity:.72}
+.twall-lineup-mark{width:42px;height:42px;border-radius:11px;background:var(--surface-raised);display:grid;place-items:center;font-size:22px;font-weight:800;color:var(--text-secondary)}
+.twall-lineup-row.live .twall-lineup-mark{background:var(--accent);color:var(--surface-wall)}
+.twall-bingo{display:grid;gap:16px;align-content:start;min-height:0;min-width:0}
+.twall-card{padding:18px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.twall-card.leader{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.twall-card-head{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:10px;align-items:center}
+.twall-card-head b{font-size:26px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.twall-card-head span{font-size:36px;font-weight:820;color:var(--accent);letter-spacing:-.04em}
+.wall-avatar.small{width:44px;height:44px;border-radius:11px;font-size:22px}
+.wall-avatar.large{width:120px;height:120px;border-radius:28px;font-size:52px}
+.twall-mini-grid{display:grid;gap:6px}
+.twall-mini-grid i{aspect-ratio:1;border-radius:8px;background:var(--surface-raised);border:1px solid rgba(176,189,210,.1)}
+.twall-mini-grid i.on{background:var(--status-in-game);border-color:var(--status-in-game)}
+.twall-card-foot{font-size:22px;color:var(--text-secondary);white-space:nowrap}
+.twall-timer{font-size:96px;font-weight:820;letter-spacing:-.05em;color:var(--accent);line-height:1;margin:4px 0 14px}
+.twall-timer.over{color:var(--status-away);font-size:64px}
+.twall-tick{display:grid;grid-template-columns:auto minmax(0,1fr);gap:14px;font-size:24px;padding:10px 0;border-top:1px solid rgba(176,189,210,.12);white-space:nowrap}
+.twall-tick span{color:var(--text-secondary);overflow:hidden;text-overflow:ellipsis}
+.twall-podium{flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:26px}
+.twall-steps{display:flex;align-items:flex-end;gap:24px}
+.twall-step{width:440px;display:flex;flex-direction:column;align-items:center;gap:18px}
+.twall-step-people{display:flex;gap:22px;justify-content:center}
+.twall-step-people>div{display:flex;flex-direction:column;align-items:center;gap:8px;min-width:0}
+.twall-step-people b{font-size:40px;font-weight:800;letter-spacing:-.03em;white-space:nowrap}
+.twall-step-people span{font-size:26px;color:var(--text-secondary);font-weight:700}
+.twall-step.place-1 .twall-step-people b{font-size:54px}
+.twall-step-block{width:100%;border-radius:22px 22px 0 0;background:var(--surface-card);border:1px solid rgba(176,189,210,.1);display:grid;place-items:center;font-size:48px;font-weight:820;color:var(--text-secondary);letter-spacing:.04em}
+.twall-step.place-1 .twall-step-block{height:300px;background:color-mix(in srgb,var(--accent) 32%,var(--surface-card));color:var(--text-primary);font-size:64px}
+.twall-step.place-2 .twall-step-block{height:210px}
+.twall-step.place-3 .twall-step-block{height:150px}
+.twall-rest{display:flex;gap:30px;font-size:26px;color:var(--text-secondary);flex-wrap:wrap;justify-content:center}
+.twall-rest b{color:var(--text-primary)}
+.twall-strip{height:78px;flex:none;display:grid;grid-template-columns:minmax(0,1fr) 540px;gap:25px}
+.twall-presence{display:flex;gap:10px;overflow:hidden;min-width:0}
+.twall-chip.wall-status{display:flex;flex-direction:column;justify-content:center;align-items:flex-start;gap:2px;margin:0;flex:1 1 0;min-width:0;max-width:280px;background:var(--surface-card);border:1px solid rgba(176,189,210,.08);border-radius:14px;padding:6px 14px}
+.twall-chip b{font-size:22px;font-weight:780;color:var(--text-primary);max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.twall-chip-line{display:flex;gap:7px;align-items:center;font-size:22px;max-width:100%;min-width:0}
+.twall-chip-line .status-label{overflow:hidden;text-overflow:ellipsis;font-weight:650}
+.twall-radio{display:flex;align-items:center;gap:14px;background:var(--surface-card);border:1px solid rgba(176,189,210,.08);border-radius:14px;padding:7px 16px 7px 7px;min-width:0}
+.twall-album{width:62px;height:62px;border-radius:10px;flex:none;background:linear-gradient(143deg,#364c70,#836d9f 46%,#2a4665);background-size:cover;background-position:center}
+.twall-radio>div{min-width:0}
+.twall-radio b{display:block;font-size:24px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.twall-radio span{display:block;font-size:22px;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}

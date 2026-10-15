@@ -71,6 +71,18 @@ A fixed 1920×1080 layout that scales to any projector or TV, readable from 4 me
 - **LAN Wrapped:** publish the final recap on the last day.
 - **Discord highlights:** pick messages from a Discord channel to rotate on the wall. The bot only reads; it never posts.
 
+## The tournament
+
+A games night where everyone battles across several games, run from the admin page.
+
+- **The lineup:** plan the games up front (solo, team or bingo), reorder them, and add more later.
+- **Scoring rounds:** tap the finishing order of each round, with ties. A game can have as many rounds as you like (five rounds of GeoGuessr, say); the rounds add up to a game score.
+- **Finishing a game** ranks everyone by game score and hands out tournament points by place (`config/tournament.yaml`), so every game weighs the same. The wall announces the points.
+- **Team games:** split the players into teams; everyone in a team gets the team's place. Teams can change between rounds.
+- **Bingo:** write a pool of ideas ("Pet a dog", "Earn 1,000,000 dollars"). Each player gets a random card on their dashboard and ticks what they did before the time runs out. Squares, lines and a full card make the game score. An admin can remove a tick.
+- **On the wall:** while the tournament runs, the wall shows the scoreboard, the live game and the lineup, every bingo card during a bingo game, and a podium at the end. A small strip keeps showing what everyone is playing and what's on LAN Radio.
+- **LAN Wrapped** keeps the final standings.
+
 ## LAN Wrapped
 
 Every game session, song, vote and activity is saved. LAN Wrapped turns it into a recap page, and everyone can see the weekend so far at any time.
