@@ -2,7 +2,7 @@
 import type { FastifyInstance } from 'fastify';
 import {
   activityActionSchema, dashboardLayoutSchema, myStatusSchema, newActivitySchema, newPollSchema, pinSchema,
-  radioControlSchema, rsvpSchema, songRequestSchema, voteSchema, closePollSchema,
+  radioControlSchema, rsvpSchema, songRequestSchema, voteSchema, closePollSchema, bingoTickSchema,
 } from '@lan-os/shared';
 import { updatePlayer } from '../config/players.ts';
 import { buildRecap, lanSummaries } from '../history/recap.ts';
@@ -133,6 +133,15 @@ export function playerRoutes(app: FastifyInstance, c: AppContext, h: Helpers): v
     if (!input) return;
     if (!session) return reply.code(401).send({ error: 'Sign in first.' });
     return h.attempt(reply, () => c.hub.activities.act(id(request), input.action, { playerId: session.playerId, isAdmin: c.hub.isAdmin(session) }));
+  });
+
+  // --- Tournament bingo ---
+
+  app.post('/api/tournament/bingo/:id', async (request, reply) => {
+    const playerId = h.requirePlayer(request, reply);
+    const input = playerId && h.body(bingoTickSchema, request, reply);
+    if (!playerId || !input) return;
+    return h.attempt(reply, () => c.hub.tournament.tick(playerId, id(request), input.ticked));
   });
 
   // --- History and LAN Wrapped (visible to everyone on the LAN) ---

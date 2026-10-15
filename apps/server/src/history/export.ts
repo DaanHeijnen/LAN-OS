@@ -43,6 +43,7 @@ section{background:var(--surface-card);border-radius:var(--radius-card);padding:
 </div>
 <div class="grid">
 <section><h2>Awards</h2>${list(r.awards, a => `<div class="award"><b>${esc(a.title)}</b><br>${esc(a.player)} <span class="quiet">· ${esc(a.reason)}</span></div>`, 'No awards yet.')}</section>
+${r.tournaments.map(t => `<section><h2>${esc(t.name)}</h2>${list(t.standings, x => `<div class="row"><span>${x.place}. ${esc(x.player)}</span><span class="sub">${x.points} pts</span></div>`, '')}</section>`).join('\n')}
 <section><h2>Most played</h2>${list(r.topGames, g => `<div class="row"><span>${esc(g.name)}</span><span class="sub">${g.hours}h · ${g.players} players</span></div>`, 'No games yet.')}</section>
 <section><h2>Longest sessions</h2>${list(r.longestSessions, s => `<div class="row"><span>${esc(s.player)} · ${esc(s.game)}</span><span class="sub">${formatDuration(s.seconds)}</span></div>`, 'No sessions yet.')}</section>
 <section><h2>Biggest groups</h2>${list(r.biggestGroups, g => `<div class="row"><span>${esc(g.game)}</span><span class="sub">${g.players.length} · ${esc(g.players.join(', '))}</span></div>`, 'Nobody played together yet.')}</section>

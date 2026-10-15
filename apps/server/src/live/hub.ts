@@ -28,6 +28,7 @@ import { PresenceTracker } from '../presence/tracker.ts';
 import type { MusicService } from '../radio/music.ts';
 import { Radio } from '../radio/radio.ts';
 import { SpotifyApi, type SpotifyTokens } from '../radio/spotify.ts';
+import { Tournament } from '../tournament/tournament.ts';
 
 /** Bundle quick changes into one update for the screens. */
 const PUSH_DELAY_MS = 100;
@@ -82,6 +83,7 @@ export class LiveHub {
   readonly radio: Radio;
   readonly polls: Polls;
   readonly activities: Activities;
+  readonly tournament: Tournament;
   readonly announcer: Announcer;
   readonly backups: Backups;
   readonly gameFinder: GameFinder;
@@ -125,6 +127,12 @@ export class LiveHub {
       },
     });
     this.activities = new Activities({ ...common, nickname: id => this.nickname(id), submissionsBlocked: () => this.submissionsBlocked() });
+    this.tournament = new Tournament({
+      ...common,
+      playerIds: () => this.players.map(p => p.id),
+      nickname: id => this.nickname(id),
+      announce: (text, ms) => this.showAnnouncement(text, 'major', ms, 'tournament'),
+    });
     this.announcer = new Announcer({
       store: options.store,
       ai: () => this.aiWriter(),
@@ -234,6 +242,7 @@ export class LiveHub {
   private housekeeping(): void {
     this.polls.tick();
     this.activities.tick();
+    this.tournament.housekeeping();
     const lead = durationToSeconds(this.o.store.get('activities').reminder_lead_time) * 1000;
     for (const a of this.activities.list(null)) {
       const until = Date.parse(a.startsAt) - this.now().getTime();
@@ -494,6 +503,7 @@ export class LiveHub {
       recapPublished: runtime.recap_published.includes(this.lanId),
       gameFinder: forWall ? { available: false, reason: null, games: [] }
         : this.gameFinder.info(this.players.map(p => ({ nickname: p.nickname, steamId: this.steamIdOf(p) })), this.o.demo),
+      tournament: this.tournament.info(),
     };
     // Anonymous or hidden details never reach the wall.
     if (forWall && runtime.hide_public) snapshot.polls = snapshot.polls.map(p => ({ ...p, votersByOption: p.options.map(() => []) }));

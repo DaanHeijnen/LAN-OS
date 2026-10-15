@@ -117,6 +117,17 @@ export const serverSchema = section({
   log_retention: duration('1d', '365d'),
 });
 
+export const tournamentSchema = section({
+  placement_points: z.array(wholeNumber(0, 100), { error: 'must be a list of whole numbers like [10, 8, 6], highest first' })
+    .min(1, { error: 'must have at least one number, for first place' }).max(32, { error: 'must have at most 32 numbers' }),
+  bingo_card_size: wholeNumber(3, 5),
+  bingo_time_limit: duration('5m', '6h'),
+  bingo_square_points: wholeNumber(0, 100),
+  bingo_line_points: wholeNumber(0, 100),
+  bingo_full_card_points: wholeNumber(0, 100),
+  result_on_wall: duration('5s', '5m'),
+});
+
 const fontSize = (min: number) => wholeNumber(min, 200);
 
 export const themeSchema = section({
@@ -166,6 +177,7 @@ export const CONFIG_SCHEMAS = {
   announcements: announcementsSchema,
   integrations: integrationsSchema,
   server: serverSchema,
+  tournament: tournamentSchema,
   theme: themeSchema,
 } as const;
 

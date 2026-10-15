@@ -2,8 +2,9 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { isSeq } from 'yaml';
 import {
-  activityActionSchema, closePollSchema, discordSettingsSchema, eventSettingsSchema, newPlayerSchema, playerFieldsSchema,
-  radioControlSchema, safetySchema, setupSecretSchema, steamPauseSchema, wallMessageSchema, wallSettingsSchema,
+  activityActionSchema, closePollSchema, discordSettingsSchema, eventSettingsSchema, newPlayerSchema, newTournamentGameSchema,
+  newTournamentSchema, playerFieldsSchema, radioControlSchema, safetySchema, setupSecretSchema, steamPauseSchema,
+  tournamentGameChangeSchema, tournamentRoundSchema, tournamentStateSchema, wallMessageSchema, wallSettingsSchema,
 } from '@lan-os/shared';
 import { z } from 'zod';
 import { addPlayer, removePlayer, updatePlayer } from '../config/players.ts';
@@ -175,6 +176,55 @@ export function adminRoutes(app: FastifyInstance, c: AppContext, h: Helpers): vo
     if (!input) return;
     c.hub.setRuntime({ steam_paused: input.paused });
     return reply.send({ ok: true });
+  }));
+
+  // --- Tournament ---
+
+  app.post('/api/admin/tournament', admin(async (request, reply) => {
+    const input = h.body(newTournamentSchema, request, reply);
+    if (!input) return;
+    return h.attempt(reply, () => c.hub.tournament.create(input.name));
+  }));
+
+  app.post('/api/admin/tournament/state', admin(async (request, reply) => {
+    const input = h.body(tournamentStateSchema, request, reply);
+    if (!input) return;
+    return h.attempt(reply, () => c.hub.tournament.setState(input.state));
+  }));
+
+  app.post('/api/admin/tournament/games', admin(async (request, reply) => {
+    const input = h.body(newTournamentGameSchema, request, reply);
+    if (!input) return;
+    return h.attempt(reply, () => c.hub.tournament.addGame(input));
+  }));
+
+  app.patch('/api/admin/tournament/games/:id', admin(async (request, reply) => {
+    const input = h.body(tournamentGameChangeSchema, request, reply);
+    if (!input) return;
+    return h.attempt(reply, () => c.hub.tournament.changeGame(Number(id(request)), input));
+  }));
+
+  app.delete('/api/admin/tournament/games/:id', admin(async (request, reply) =>
+    h.attempt(reply, () => c.hub.tournament.removeGame(Number(id(request))))));
+
+  app.post('/api/admin/tournament/games/:id/start', admin(async (request, reply) =>
+    h.attempt(reply, () => c.hub.tournament.startGame(Number(id(request))))));
+
+  app.post('/api/admin/tournament/games/:id/finish', admin(async (request, reply) =>
+    h.attempt(reply, () => c.hub.tournament.finishGame(Number(id(request))))));
+
+  app.post('/api/admin/tournament/games/:id/rounds', admin(async (request, reply) => {
+    const input = h.body(tournamentRoundSchema, request, reply);
+    if (!input) return;
+    return h.attempt(reply, () => c.hub.tournament.recordRound(Number(id(request)), input.placings));
+  }));
+
+  app.delete('/api/admin/tournament/games/:id/rounds/last', admin(async (request, reply) =>
+    h.attempt(reply, () => c.hub.tournament.removeLastRound(Number(id(request))))));
+
+  app.delete('/api/admin/tournament/games/:id/bingo/:player/:square', admin(async (request, reply) => {
+    const params = request.params as { player: string; square: string };
+    return h.attempt(reply, () => c.hub.tournament.untick(Number(id(request)), params.player, Number(params.square)));
   }));
 
   // --- History, backups, Discord ---

@@ -13,6 +13,7 @@ import { PollError } from '../polls/polls.ts';
 import { MusicError } from '../radio/music.ts';
 import { RadioError } from '../radio/radio.ts';
 import type { SpotifyTokens } from '../radio/spotify.ts';
+import { TournamentError } from '../tournament/tournament.ts';
 
 export interface AppContext {
   store: ConfigStore;
@@ -78,7 +79,8 @@ export function helpers(c: AppContext) {
       return reply.send(result ?? { ok: true });
     } catch (error) {
       if (error instanceof ConfigError) return reply.code(400).send({ error: error.lines.join('\n') });
-      if (error instanceof RadioError || error instanceof PollError || error instanceof ActivityError || error instanceof MusicError) {
+      if (error instanceof RadioError || error instanceof PollError || error instanceof ActivityError || error instanceof MusicError
+        || error instanceof TournamentError) {
         return reply.code(400).send({ error: error.message });
       }
       throw error;

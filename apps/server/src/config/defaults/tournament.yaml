@@ -1,0 +1,24 @@
+# LAN OS tournament: games played through the night with a live scoreboard on the wall.
+# You run the tournament from the admin page; these are the scoring rules.
+
+# Tournament points for 1st, 2nd, 3rd ... place when a game is finished. Places beyond the list get 0.
+# Also used to score each round inside a game. A list of whole numbers from 0 to 100, highest first. Default: [10, 8, 6, 5, 4, 3, 2]
+placement_points: [10, 8, 6, 5, 4, 3, 2]
+
+# Bingo card size: 4 means 4 × 4 squares. A whole number from 3 to 5. Default: 4
+bingo_card_size: 4
+
+# Suggested time limit for a bingo game; the admin can change it per game. A time from "5m" to "6h". Default: "60m"
+bingo_time_limit: "60m"
+
+# Suggested bingo game score for each ticked square. A whole number from 0 to 100. Default: 1
+bingo_square_points: 1
+
+# Suggested bingo game score for each full row, column or diagonal. A whole number from 0 to 100. Default: 3
+bingo_line_points: 3
+
+# Suggested bingo game score for a completely ticked card. A whole number from 0 to 100. Default: 10
+bingo_full_card_points: 10
+
+# How long a finished game's result is announced on the wall. A time from "5s" to "5m". Default: "45s"
+result_on_wall: "45s"

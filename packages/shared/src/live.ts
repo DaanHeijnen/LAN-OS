@@ -3,6 +3,7 @@
 import { z } from 'zod';
 import { WALL_PANELS } from './config/schemas.ts';
 import type { Game, PresenceStatus, SteamLink } from './presence.ts';
+import type { TournamentInfo } from './tournament.ts';
 
 export const SCREENS = ['wall', 'app', 'admin'] as const;
 export type Screen = (typeof SCREENS)[number];
@@ -187,6 +188,8 @@ export interface LiveSnapshot {
   safety: SafetyState;
   recapPublished: boolean;
   gameFinder: GameFinderInfo;
+  /** The tournament being set up, running or showing its podium; null when there is none. */
+  tournament: TournamentInfo | null;
   me?: MeInfo;
   admin?: AdminInfo;
 }
@@ -324,6 +327,7 @@ export interface RecapData {
     playlist: Array<{ title: string; artist: string; requester: string | null }>;
   };
   awards: Array<{ title: string; player: string; playerId: string; reason: string }>;
+  tournaments: Array<{ name: string; standings: Array<{ player: string; place: number; points: number }> }>;
   timeline: Array<{ at: string; text: string }>;
   players: Array<{
     id: string; nickname: string; hours: number; sessions: number;

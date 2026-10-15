@@ -3,6 +3,7 @@
 import type { LanSummary, RecapData, RecapSession } from '@lan-os/shared';
 import type { Db } from '../db/database.ts';
 import { listEvents, type StoredEvent } from '../db/events.ts';
+import { Tournament } from '../tournament/tournament.ts';
 
 const HOUR_S = 3600;
 const round1 = (n: number) => Math.round(n * 10) / 10;
@@ -218,6 +219,8 @@ export function buildRecap(db: Db, o: RecapOptions): RecapData | null {
     hourly: hourlySeconds(intervals, tz).map(s => round1(s / HOUR_S)),
     music,
     awards,
+    tournaments: Tournament.finalStandings(db, lan.id)
+      .map(t => ({ name: t.name, standings: t.standings.map(s => ({ player: name(s.playerId), place: s.place, points: s.points })) })),
     timeline: timeline.slice(-40),
     players: players.sort((a, b) => b.hours - a.hours).map(({ night: _n, morning: _m, together: _t, topShare: _s, ...p }) => p),
   };
