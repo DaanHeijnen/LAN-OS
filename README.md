@@ -81,6 +81,8 @@ A games night where everyone battles across several games, run from the admin pa
 - **Team games:** split the players into teams; everyone in a team gets the team's place. Teams can change between rounds.
 - **Bingo:** write a pool of ideas ("Pet a dog", "Earn 1,000,000 dollars"). Each player gets a random card on their dashboard and ticks what they did before the time runs out. Squares, lines and a full card make the game score. An admin can remove a tick.
 - **On the wall:** while the tournament runs, the wall shows the scoreboard, the live game and the lineup, every bingo card during a bingo game, and a podium at the end. A small strip keeps showing what everyone is playing and what's on LAN Radio.
+- **Game pot:** players throw games they'd like to play into the pot from their dashboard. The admin approves them and, before the tournament starts, draws a few at random; they join the lineup as wildcards and the wall announces them.
+- **Planned lineup:** a ready-made lineup in `config/tournament.yaml` that the admin adds with one button. It ships with the **Game Gauntlet** night (`docs/game-gauntlet.md`).
 - **LAN Wrapped** keeps the final standings.
 
 ## LAN Wrapped
@@ -130,7 +132,7 @@ Players' Steam profiles and **Game details** must be set to **Public**, so LAN O
 | Folder | What's in it |
 | --- | --- |
 | `config/` | All settings. Start with `config/README.md` |
-| `docs/` | `going-live.md`: setting up the real LAN |
+| `docs/` | `going-live.md`: setting up the real LAN. `game-gauntlet.md`: the Game Gauntlet games night |
 | `tools/` | Start with Windows, on and off |
 | `apps/`, `packages/` | The app itself |
 | `data/` | Database, backups and logs, created when LAN OS runs |
