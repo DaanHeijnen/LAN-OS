@@ -152,6 +152,48 @@ export class Tournament {
     this.o.onChange();
   }
 
+  /** Creates the planned lineup from tournament.yaml (the Game Gauntlet) in one go. */
+  createPlanned(): void {
+    const config = this.o.store.get('tournament');
+    if (!config.planned_lineup.length) throw new TournamentError('There is no planned lineup in config/tournament.yaml.');
+    if (this.current()) throw new TournamentError('A tournament is already set up. Close it first to start a new one.');
+    this.o.db.transaction(() => {
+      this.create(config.planned_lineup_name);
+      for (const game of config.planned_lineup) this.addGame({ name: game.name, kind: game.kind });
+    })();
+  }
+
+  /** The current tournament's id and state, or null when there is none. */
+  currentTournament(): { id: number; state: 'setup' | 'live' | 'finished' } | null {
+    const t = this.current();
+    return t && t.state !== 'closed' ? { id: t.id, state: t.state } : null;
+  }
+
+  /**
+   * Puts games drawn from the game pot into the lineup. positions[i] is the place (1 = first) of
+   * names[i] in the new lineup; a game without a position goes at the end. Returns the new game ids.
+   */
+  addDrawnGames(names: string[], positions: number[]): number[] {
+    const t = this.require();
+    if (t.state === 'finished') throw new TournamentError('The tournament is finished.');
+    const ids: number[] = [];
+    this.o.db.transaction(() => {
+      const order = this.games(t.id).map(g => g.id);
+      const insert = this.o.db.prepare("INSERT INTO tournament_games (tournament_id, position, name, kind, state) VALUES (?, 0, ?, 'solo', 'upcoming')");
+      const placed = names.map((name, i) => ({ id: Number(insert.run(t.id, name.trim()).lastInsertRowid), position: positions[i] ?? null }));
+      ids.push(...placed.map(p => p.id));
+      // Fixed places first, lowest place first, so "4 and 6" end up exactly at 4 and 6.
+      for (const p of placed.filter(p => p.position !== null).sort((a, b) => a.position! - b.position!)) {
+        order.splice(Math.min(p.position! - 1, order.length), 0, p.id);
+      }
+      for (const p of placed.filter(p => p.position === null)) order.push(p.id);
+      const update = this.o.db.prepare('UPDATE tournament_games SET position = ? WHERE id = ?');
+      order.forEach((id, i) => update.run(i + 1, id));
+    })();
+    this.o.onChange();
+    return ids;
+  }
+
   setState(state: 'live' | 'finished' | 'closed'): void {
     const t = this.require();
     const now = this.now().toISOString();

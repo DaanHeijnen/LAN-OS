@@ -2,7 +2,7 @@
 import type { FastifyInstance } from 'fastify';
 import {
   activityActionSchema, dashboardLayoutSchema, myStatusSchema, newActivitySchema, newPollSchema, pinSchema,
-  radioControlSchema, rsvpSchema, songRequestSchema, voteSchema, closePollSchema, bingoTickSchema,
+  radioControlSchema, rsvpSchema, songRequestSchema, voteSchema, closePollSchema, bingoTickSchema, potEntrySchema,
 } from '@lan-os/shared';
 import { updatePlayer } from '../config/players.ts';
 import { buildRecap, lanSummaries } from '../history/recap.ts';
@@ -142,6 +142,22 @@ export function playerRoutes(app: FastifyInstance, c: AppContext, h: Helpers): v
     const input = playerId && h.body(bingoTickSchema, request, reply);
     if (!playerId || !input) return;
     return h.attempt(reply, () => c.hub.tournament.tick(playerId, id(request), input.ticked));
+  });
+
+  // --- Game pot ---
+
+  app.post('/api/pot', async (request, reply) => {
+    const playerId = h.requirePlayer(request, reply);
+    const input = playerId && h.body(potEntrySchema, request, reply);
+    if (!playerId || !input) return;
+    return h.attempt(reply, () => ({ id: c.hub.pot.add(playerId, input) }));
+  });
+
+  /** The player who added a game takes it out; admins can remove any game that wasn't drawn. */
+  app.delete('/api/pot/:id', async (request, reply) => {
+    const session = h.sessionOf(request);
+    if (!session) return reply.code(401).send({ error: 'Sign in first.' });
+    return h.attempt(reply, () => c.hub.pot.remove(id(request), { playerId: session.playerId, isAdmin: c.hub.isAdmin(session) }));
   });
 
   // --- History and LAN Wrapped (visible to everyone on the LAN) ---
