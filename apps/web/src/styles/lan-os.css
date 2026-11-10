@@ -262,3 +262,25 @@ button.bingo-square:disabled{cursor:not-allowed}
 .twall-radio>div{min-width:0}
 .twall-radio b{display:block;font-size:24px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .twall-radio span{display:block;font-size:22px;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* Game pot: player dashboard and admin page. */
+.pot-panel .fair-note{margin:0 21px 14px}
+.pot-help{margin:0 21px 12px;line-height:1.5}
+.pot-list{padding:0 21px}
+.pot-list>p{margin:0 0 12px}
+.pot-row{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-top:1px solid var(--border)}
+.pot-row>div{flex:1;min-width:0}
+.pot-row strong{display:block;font-size:12px}
+.pot-row strong a{color:inherit;text-decoration:none}
+.pot-row strong a:hover{color:var(--accent)}
+.pot-row small{display:block;font-size:11px;color:var(--text-secondary);margin-top:2px;overflow-wrap:anywhere}
+.pot-row .tiny-pill{flex:none;margin-top:1px}
+.pot-row.rejected{opacity:.7}
+.pot-row.drawn .lineup-number{background:var(--accent);color:var(--surface-wall)}
+.pot-note{color:var(--status-away)!important}
+.pot-actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:14px 21px 18px;border-top:1px solid var(--border)}
+.pot-actions .muted{margin:0}
+.pot-review{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.pot-review input{width:160px;min-width:0}
+/* A drawn pot game in the wall lineup. */
+.twall-lineup-row .twall-pot{color:var(--accent);font-weight:760}

@@ -51,6 +51,7 @@ A fixed 1920×1080 layout that scales to any projector or TV, readable from 4 me
   - set a game Steam doesn't detect
   - a PIN for signing in on another PC
   - optional sound cues
+- **Game pot:** throw a game you'd like to play into the pot for the tournament, with a link and how a match works.
 - **Shared Game Finder:** games several of you own, with a button to launch them.
 - **Your last sessions**, and a link to LAN Wrapped.
 - **Make it yours:** reorder, hide or collapse panels, and use a compact view for a second monitor.

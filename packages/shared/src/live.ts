@@ -79,6 +79,8 @@ export interface CrashInfo { file: string; at: string; summary: string }
 
 export interface AdminInfo {
   players: AdminPlayer[];
+  /** The planned lineup from tournament.yaml, for the "Set up" button; null when there is none. */
+  plannedLineup: { name: string; games: string[] } | null;
   crashes: CrashInfo[];
   configProblems: string[];
   steamPaused: boolean;

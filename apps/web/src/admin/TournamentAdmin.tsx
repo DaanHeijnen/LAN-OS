@@ -25,6 +25,13 @@ export function TournamentCard({ snapshot, now }: { snapshot: LiveSnapshot; now:
       <section className="card admin-polls-card" id="tournament">
         <div className="section-header"><div><div className="section-overline">TOURNAMENT</div><h2>Games night</h2></div><span className="tiny-pill">OFF</span></div>
         <p className="muted text-sm">Plan a lineup of games, score each round, and the wall shows a live scoreboard. Bingo rounds give everyone their own card.</p>
+        {snapshot.admin?.plannedLineup && <div className="admin-poll-detail">
+          <div><strong>{snapshot.admin.plannedLineup.name}</strong>
+            <small>{snapshot.admin.plannedLineup.games.join(' · ')}{snapshot.gamePot.enabled ? ` · plus ${snapshot.gamePot.drawCount} from the game pot` : ''}</small></div>
+          <button className="button button-primary button-small"
+            onClick={() => void run(() => api('/api/admin/tournament/planned'), `${snapshot.admin!.plannedLineup!.name} is set up.`)}>
+            <Icon name="trophy" /> Set up {snapshot.admin.plannedLineup.name}</button>
+        </div>}
         <form className="tournament-form" onSubmit={e => { e.preventDefault(); void run(() => api('/api/admin/tournament', 'POST', { name }), 'Tournament created. Add the games next.').then(ok => ok && setName('')); }}>
           <label className="sr-only" htmlFor="tournament-name">Tournament name</label>
           <input id="tournament-name" value={name} maxLength={40} onChange={e => setName(e.target.value)} placeholder="Friday Night Cup" />

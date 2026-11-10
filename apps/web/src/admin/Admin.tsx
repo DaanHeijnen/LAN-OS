@@ -12,6 +12,7 @@ import { Avatar, Modal, StatusDot, Switch, useAction, useToast } from '../ui/com
 import { Icon, type IconName } from '../ui/Icon.tsx';
 import { AllSystems, Shell, TopAvatar } from '../ui/Shell.tsx';
 import { mmss } from '../format.ts';
+import { GamePotCard } from './PotAdmin.tsx';
 import { TournamentCard } from './TournamentAdmin.tsx';
 import '../styles/app.css';
 import '../styles/lan-os.css';
@@ -43,6 +44,8 @@ export default function Admin() {
         { href: '#projector', icon: 'projector', label: 'Projector' },
         { href: '#announcements', icon: 'megaphone', label: 'Announcements' },
         { href: '#tournament', icon: 'trophy', label: 'Tournament', ...(snapshot.tournament?.state === 'live' ? { count: 1 } : {}) },
+        ...(snapshot.gamePot.enabled ? [{ href: '#game-pot', icon: 'gamepad-2' as IconName, label: 'Game pot',
+          ...(snapshot.gamePot.entries.some(e => e.state === 'waiting') ? { count: snapshot.gamePot.entries.filter(e => e.state === 'waiting').length } : {}) }] : []),
         { href: '#people', icon: 'users-round', label: 'People & access' },
         { href: '#admin-polls', icon: 'chart-no-axes-column', label: 'Polls & activities' },
         { href: '#systems', icon: 'activity', label: 'Integrations & logs' },
@@ -83,6 +86,7 @@ export default function Admin() {
           <div className="admin-left">
             <ProjectorCard snapshot={snapshot} now={now} />
             <TournamentCard snapshot={snapshot} now={now} />
+            <GamePotCard snapshot={snapshot} />
             <PeopleCard admin={admin} snapshot={snapshot} />
             <PollsCard snapshot={snapshot} />
             <ActivitiesCard snapshot={snapshot} now={now} />

@@ -26,7 +26,8 @@ the **compact view** button (top right) so it fits a side screen. Each player's 
    with the four fixed games from `config/tournament.yaml` (`planned_lineup`).
 2. **Open the pot:** players add their game on their dashboard under *Game pot* (name, download link, how a match
    works). The rules are below.
-3. **Approve:** on the admin page, approve or reject each pot game. Rejected players can add another one.
+3. **Approve:** on the admin page under *Game pot*, approve or reject each pot game (with a reason). A player whose game
+   was rejected can add another one. Close the pot with the switch when you start installing.
 4. **Install:** put the four fixed games and **every approved pot game** on all 8 PCs. Any two can be drawn.
 5. **Test evening:** see the checklist at the bottom.
 
@@ -50,8 +51,8 @@ the **compact view** button (top right) so it fits a side screen. Each player's 
 
 ## The game pot
 
-Every player can put one game in the pot (`pot_games_per_player`). At 18:00 the host presses **Draw** on the admin
-page. LAN OS picks two approved games at random, puts them into the lineup at places 4 and 6
+Every player can put one game in the pot (`pot_games_per_player`). At 18:00 the host presses **Draw the wildcards** on the
+admin page (*Game pot*). LAN OS picks two approved games at random, puts them into the lineup at places 4 and 6
 (`pot_draw_positions`), closes the pot and announces them on the wall.
 
 A pot game must:
@@ -122,7 +123,7 @@ most games won.
 
 | When | Host |
 | --- | --- |
-| 18:00 | Everyone signed in on `/app`. Explain the points. Press **Draw** and read the wildcards out from the wall. Press **Start tournament**. |
+| 18:00 | Everyone signed in on `/app`. Explain the points. Press **Draw the wildcards** and read them out from the wall. Press **Start tournament**. |
 | 18:15 | Start AssaultCube servers and the game in LAN OS. Call each round of duels. |
 | 19:05 | Enter the AssaultCube ranking as one round, press **Finish**. |
 | 19:20 | Bash Fighter, the same way. |

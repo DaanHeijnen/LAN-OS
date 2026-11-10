@@ -532,7 +532,10 @@ export class LiveHub {
     }
     if (screen === 'admin' && this.isAdmin(session)) {
       const integrations = this.o.store.get('integrations');
+      const tournamentConfig = this.o.store.get('tournament');
       snapshot.admin = {
+        plannedLineup: tournamentConfig.planned_lineup.length
+          ? { name: tournamentConfig.planned_lineup_name, games: tournamentConfig.planned_lineup.map(g => g.name) } : null,
         players: this.players.map((p, index) => {
           const token = this.o.accounts.joinLinkFor(p.id);
           return {

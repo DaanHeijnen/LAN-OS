@@ -19,7 +19,8 @@ export function TournamentWall({ snapshot, tournament: t, now }: { snapshot: Liv
             <Scoreboard t={t} player={player} live={live} />
             <div className="twall-side">
               <LiveGameCard t={t} live={live} />
-              <Lineup t={t} player={player} />
+              <Lineup t={t} player={player} potGames={new Map(snapshot.gamePot.entries.filter(e => e.tournamentGameId !== null)
+                .map(e => [e.tournamentGameId!, e.drawOrder]))} />
             </div>
           </div>}
       <RoomStrip snapshot={snapshot} />
@@ -95,7 +96,7 @@ function LiveGameCard({ t, live }: { t: TournamentInfo; live: TournamentGameInfo
   );
 }
 
-function Lineup({ t, player }: { t: TournamentInfo; player: Lookup }) {
+function Lineup({ t, player, potGames }: { t: TournamentInfo; player: Lookup; potGames: Map<number, number | null> }) {
   return (
     <div className="wall-card twall-lineup">
       <div className="wall-card-heading"><span className="overline">LINEUP</span></div>
@@ -105,7 +106,8 @@ function Lineup({ t, player }: { t: TournamentInfo; player: Lookup }) {
           <div className={`twall-lineup-row ${g.state}`} key={g.id}>
             <span className="twall-lineup-mark">{g.state === 'finished' ? '✓' : g.state === 'live' ? '▶' : i + 1}</span>
             <b>{g.name}</b>
-            <span>{g.state === 'finished' ? `🏆 ${winners.join(' & ')}` : g.state === 'live' ? 'LIVE' : TOURNAMENT_KIND_LABELS[g.kind]}</span>
+            <span>{g.state === 'finished' ? `🏆 ${winners.join(' & ')}` : g.state === 'live' ? 'LIVE'
+              : potGames.has(g.id) ? <span className="twall-pot">WILDCARD{potGames.get(g.id) ? ` ${potGames.get(g.id)}` : ''}</span> : TOURNAMENT_KIND_LABELS[g.kind]}</span>
           </div>
         );
       })}
