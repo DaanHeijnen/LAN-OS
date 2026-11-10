@@ -2,8 +2,8 @@
 # You run the tournament from the admin page; these are the scoring rules.
 
 # Tournament points for 1st, 2nd, 3rd ... place when a game is finished. Places beyond the list get 0.
-# Also used to score each round inside a game. A list of whole numbers from 0 to 100, highest first. Default: [10, 8, 6, 5, 4, 3, 2]
-placement_points: [10, 8, 6, 5, 4, 3, 2]
+# Also used to score each round inside a game. A list of whole numbers from 0 to 100, highest first. Default: [10, 8, 6, 5, 4, 3, 2, 1]
+placement_points: [10, 8, 6, 5, 4, 3, 2, 1]
 
 # Bingo card size: 4 means 4 × 4 squares. A whole number from 3 to 5. Default: 4
 bingo_card_size: 4
@@ -20,5 +20,37 @@ bingo_line_points: 3
 # Suggested bingo game score for a completely ticked card. A whole number from 0 to 100. Default: 10
 bingo_full_card_points: 10
 
-# How long a finished game's result is announced on the wall. A time from "5s" to "5m". Default: "45s"
+# How long a finished game's result (and the game pot draw) is announced on the wall. A time from "5s" to "5m". Default: "45s"
 result_on_wall: "45s"
+
+# --- Planned lineup ---
+# A ready-made tournament the admin sets up with one button ("Set up ...") on the admin page.
+# See docs/game-gauntlet.md for the night this lineup belongs to.
+
+# Name of the planned tournament. Text of 1 to 40 characters. Default: "Game Gauntlet"
+planned_lineup_name: "Game Gauntlet"
+
+# The fixed games, in order. Each game has a name (1 to 40 characters) and a kind: solo, teams or bingo.
+# Games drawn from the game pot are added on top of these (see pot_draw_positions). Use [] for no planned lineup. Default: []
+planned_lineup:
+  - { name: "AssaultCube", kind: solo }
+  - { name: "Bash Fighter", kind: solo }
+  - { name: "SuperTuxKart", kind: solo }
+  - { name: "Freeflier", kind: solo }
+
+# --- Game pot ---
+# Players throw games they'd like to play into the pot from their dashboard. Before the tournament starts,
+# the admin draws a few at random and they join the lineup.
+
+# How many games each player can put in the pot. 0 turns the game pot off. A whole number from 0 to 5. Default: 1
+pot_games_per_player: 1
+
+# true: an admin approves each game before it can be drawn. false: every game in the pot can be drawn. Default: true
+pot_needs_approval: true
+
+# How many games the draw picks. A whole number from 1 to 6. Default: 2
+pot_draw_count: 2
+
+# Where the drawn games go in the lineup: [4, 6] puts the first one at place 4 and the second at place 6.
+# Drawn games without a place go at the end. A list of whole numbers from 1 to 32, or [] for the end. Default: []
+pot_draw_positions: [4, 6]

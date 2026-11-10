@@ -2,6 +2,7 @@
 // explained for humans in config/README.md and in the comments of each file.
 import { z } from 'zod';
 import { isRealDateTime, isValidTimezone, localDateTimeToDate } from '../time.ts';
+import { TOURNAMENT_GAME_KINDS } from '../tournament.ts';
 import {
   dateTime, duration, hexColour, listOf, onOff, oneOf, section, shortText, slug, text, timezone, wholeNumber,
 } from './fields.ts';
@@ -126,6 +127,16 @@ export const tournamentSchema = section({
   bingo_line_points: wholeNumber(0, 100),
   bingo_full_card_points: wholeNumber(0, 100),
   result_on_wall: duration('5s', '5m'),
+  // Added later: defaults keep an older tournament.yaml without these settings working.
+  planned_lineup_name: shortText(40).default('Game Gauntlet'),
+  planned_lineup: z.array(section({ name: shortText(40), kind: oneOf(TOURNAMENT_GAME_KINDS) }),
+    { error: 'must be a list of games, each written like - { name: "AssaultCube", kind: solo }' })
+    .max(32, { error: 'must have at most 32 games' }).default([]),
+  pot_games_per_player: wholeNumber(0, 5).default(1),
+  pot_needs_approval: onOff().default(true),
+  pot_draw_count: wholeNumber(1, 6).default(2),
+  pot_draw_positions: z.array(wholeNumber(1, 32), { error: 'must be a list of whole numbers like [4, 6], or [] for the end of the lineup' })
+    .max(6, { error: 'must have at most 6 numbers' }).default([]),
 });
 
 const fontSize = (min: number) => wholeNumber(min, 200);
