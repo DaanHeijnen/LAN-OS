@@ -476,6 +476,8 @@ export class LiveHub {
       wall: {
         nightMode: wall.night_mode,
         brightness: wall.brightness,
+        scale: wall.scale,
+        upNextSongs: wall.up_next_songs,
         panels: wall.panels,
         blanked: runtime.wall_blanked,
         paused: runtime.wall_paused,

@@ -28,37 +28,41 @@ export default function Wall() {
   }, [snapshot?.wall.nightMode]);
 
   if (snapshot?.wall.blanked) return <div className="wall-blank" />;
+  // wall.yaml → scale below 100 makes the canvas larger than 1920×1080, so everything on it shows smaller.
+  const size = { width: Math.round((WIDTH * 100) / (snapshot?.wall.scale ?? 100)), height: Math.round((HEIGHT * 100) / (snapshot?.wall.scale ?? 100)) };
   return (
-    <WallStage>
-      {snapshot ? <WallCanvas snapshot={snapshot} now={now} connected={connected} /> : <div className="wall-canvas" />}
+    <WallStage size={size}>
+      {snapshot ? <WallCanvas snapshot={snapshot} now={now} connected={connected} size={size} /> : <div className="wall-canvas" />}
     </WallStage>
   );
 }
 
-function WallStage({ children }: { children: ReactNode }) {
+type CanvasSize = { width: number; height: number };
+
+function WallStage({ children, size }: { children: ReactNode; size: CanvasSize }) {
   const stage = useRef<HTMLDivElement>(null);
   const [factor, setFactor] = useState(1);
   useLayoutEffect(() => {
     const fit = () => {
       const el = stage.current;
-      if (el) setFactor(Math.min(el.clientWidth / WIDTH, el.clientHeight / HEIGHT));
+      if (el) setFactor(Math.min(el.clientWidth / size.width, el.clientHeight / size.height));
     };
     fit();
     // Re-fit whenever the stage changes size: window resize, fullscreen, or the page's own styles settling.
     const observer = new ResizeObserver(fit);
     if (stage.current) observer.observe(stage.current);
     return () => observer.disconnect();
-  }, []);
+  }, [size.width, size.height]);
   return (
     <div className="wall-stage" ref={stage}>
-      <div id="wall-scale" style={{ width: WIDTH * factor, height: HEIGHT * factor }}>
+      <div id="wall-scale" style={{ width: size.width * factor, height: size.height * factor }}>
         <div style={{ transform: `scale(${factor})`, transformOrigin: 'top left' }}>{children}</div>
       </div>
     </div>
   );
 }
 
-function WallCanvas({ snapshot, now, connected }: { snapshot: LiveSnapshot; now: Date; connected: boolean }) {
+function WallCanvas({ snapshot, now, connected, size }: { snapshot: LiveSnapshot; now: Date; connected: boolean; size: CanvasSize }) {
   const { wall, event } = snapshot;
   const clock = lanClock(event, now);
   const { groups, rest } = groupRoster(snapshot.players, { respectHidden: true });
@@ -68,7 +72,7 @@ function WallCanvas({ snapshot, now, connected }: { snapshot: LiveSnapshot; now:
   const announcement = wall.announcement ?? (wall.message ? { text: wall.message, kind: 'minor' as const } : null);
 
   return (
-    <div className="wall-canvas" style={{ filter: wall.brightness < 100 ? `brightness(${wall.brightness / 100})` : undefined }}>
+    <div className="wall-canvas" style={{ ...size, filter: wall.brightness < 100 ? `brightness(${wall.brightness / 100})` : undefined }}>
       <header className="wall-header">
         <div className="wall-identity">
           <span className="wall-brand-mark"><i /><i /><i /><i /></span>
@@ -183,8 +187,7 @@ function MusicPanel({ snapshot, now }: { snapshot: LiveSnapshot; now: Date }) {
   const current = radio.now;
   const position = livePosition(current, now);
   const progress = current ? position / Math.max(1, current.durationMs) : 0;
-  const next = radio.queue[0];
-  const nearEnd = progress > 0.85 && !!next;
+  const upNext = radio.queue.slice(0, snapshot.wall.upNextSongs);
   if (radio.status !== 'ok') {
     return (
       <div className="wall-card wall-music">
@@ -214,10 +217,24 @@ function MusicPanel({ snapshot, now }: { snapshot: LiveSnapshot; now: Date }) {
         <div className="wall-progress"><i style={{ width: `${Math.round(progress * 100)}%` }} /></div>
         <div className="wall-progress-labels"><span>{mmss(position / 1000)}</span><span>{mmss(current.durationMs / 1000)}</span></div>
       </> : <div className="wall-song-meta wall-quiet"><div className="wall-song-title">Nothing playing</div><div className="wall-song-requester">Request a song from your dashboard</div></div>}
-      <div className="wall-next">
-        <span>{nearEnd ? 'UP NEXT' : 'FAIR QUEUE'} <em>· {radio.queue.length ? `${radio.queue.length} waiting` : 'empty: request a song!'}</em></span>
-        <strong>{nearEnd ? `${next.title} · ${next.requester}` : 'Everyone gets a turn'}</strong>
-      </div>
+      {snapshot.wall.upNextSongs > 0 && <div className="wall-upnext">
+        <div className="wall-upnext-heading"><span className="overline">UP NEXT</span><em>Fair queue · everyone gets a turn</em></div>
+        {upNext.length ? upNext.map(song => {
+          const requester = snapshot.players.find(p => p.id === song.requesterId);
+          return (
+            <div className="wall-upnext-row" key={song.id}>
+              <AlbumArt className="wall-upnext-art" url={song.albumArt} label={song.artist} />
+              <div className="wall-upnext-song"><b>{song.title}</b><span>{song.artist}</span></div>
+              <div className="wall-upnext-by">
+                <span>{song.requester}</span>
+                <div className={`wall-avatar wall-upnext-avatar tone-${requester?.tone ?? 6}`}>
+                  {requester?.avatarUrl ? <img src={requester.avatarUrl} alt="" /> : initial(song.requester)}
+                </div>
+              </div>
+            </div>
+          );
+        }) : <div className="wall-upnext-empty">Queue is empty: request a song from your dashboard!</div>}
+      </div>}
     </div>
   );
 }

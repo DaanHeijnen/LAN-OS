@@ -1,6 +1,6 @@
 @echo off
 rem Double-click to start LAN OS. Keep this window open while LAN OS runs; close it to stop.
-title LAN OS
+title locallan
 cd /d "%~dp0"
 
 rem Use this PC's Node.js if it is new enough; otherwise use (or download) LAN OS's own copy in runtime\node.
@@ -25,8 +25,14 @@ echo Preparing the screens...
 call npm run build --silent
 if errorlevel 1 goto failed
 
+rem Run the server as runtime\locallan.exe (a copy of node.exe), so it is easy to find in Task Manager.
+set "SERVER_EXE=node"
+for %%N in (node.exe) do set "NODE_EXE=%%~$PATH:N"
+if not exist runtime mkdir runtime
+copy /y "%NODE_EXE%" runtime\locallan.exe >nul 2>nul && set "SERVER_EXE=runtime\locallan.exe"
+
 :run
-node apps\server\src\main.ts %LANOS_MODE%
+"%SERVER_EXE%" apps\server\src\main.ts %LANOS_MODE%
 if %errorlevel%==0 goto end
 if %errorlevel%==2 (
   echo.

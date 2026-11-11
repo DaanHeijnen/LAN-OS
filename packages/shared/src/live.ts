@@ -36,6 +36,10 @@ export interface WallState {
   highlights: Array<{ author: string; text: string }>;
   nightMode: boolean;
   brightness: number;
+  /** Size of everything on the wall in percent (wall.yaml → scale). */
+  scale: number;
+  /** How many queued songs the music panel lists (wall.yaml → up_next_songs). */
+  upNextSongs: number;
   panels: Array<(typeof WALL_PANELS)[number]>;
   blanked: boolean;
   paused: boolean;

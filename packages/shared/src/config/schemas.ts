@@ -54,6 +54,8 @@ export const wallSchema = section({
   panels: listOf(WALL_PANELS),
   night_mode: onOff(),
   brightness: wholeNumber(20, 100),
+  scale: wholeNumber(60, 100),
+  up_next_songs: wholeNumber(0, 5),
 });
 
 export const musicSchema = section({

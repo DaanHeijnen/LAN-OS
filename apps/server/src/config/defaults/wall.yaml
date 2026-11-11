@@ -10,3 +10,11 @@ night_mode: false
 
 # Brightness of the wall in percent. 100 is full brightness. Allowed: 20 to 100. Default: 100
 brightness: 100
+
+# Size of everything on the wall in percent. Lower makes the cards and text smaller, so more fits on screen
+# (below 100 the smallest text is under 22px). Allowed: 60 to 100. Default: 100
+scale: 100
+
+# How many songs from the queue the music panel lists under the current song, with their album cover and who
+# added them. 0 hides the list. Allowed: 0 to 5. Default: 3
+up_next_songs: 3

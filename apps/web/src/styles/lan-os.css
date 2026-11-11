@@ -262,3 +262,26 @@ button.bingo-square:disabled{cursor:not-allowed}
 .twall-radio>div{min-width:0}
 .twall-radio b{display:block;font-size:24px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .twall-radio span{display:block;font-size:22px;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* Wall right column: starts level with the first roster card (below the "In the room" title); the poll takes the space that is left. */
+.wall-column{padding-top:58px;min-height:0}
+.wall-column .wall-music{height:auto}
+.wall-column .wall-poll{height:auto;flex:1 1 auto;min-height:0}
+/* Wall music panel: the next songs in the queue, with album cover and who added them. */
+.wall-upnext{border-top:1px solid rgba(176,189,210,.15);margin-top:16px;padding-top:14px;display:flex;flex-direction:column;gap:8px}
+.wall-upnext-heading{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.wall-upnext-heading em{font-style:normal;font-size:22px;color:var(--text-secondary);white-space:nowrap}
+.wall-upnext-row{display:grid;grid-template-columns:56px minmax(0,1fr) auto;gap:16px;align-items:center}
+.wall-upnext-art{width:56px;height:56px;border-radius:10px;background:var(--surface-raised);background-size:cover;background-position:center}
+.wall-upnext-song{min-width:0;display:flex;flex-direction:column}
+.wall-upnext-song b{font-size:27px;font-weight:760;letter-spacing:-.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wall-upnext-song span{font-size:22px;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wall-upnext-by{display:flex;align-items:center;gap:12px;font-size:22px;color:var(--text-secondary);white-space:nowrap}
+.wall-avatar.wall-upnext-avatar{width:46px;height:46px;border-radius:12px;font-size:22px}
+.wall-upnext-empty{font-size:22px;color:var(--text-secondary)}
+/* Tighter poll and activity cards, so the poll still fits when the music panel lists the next songs. */
+.wall-column .wall-poll{padding-top:20px;padding-bottom:20px}
+.wall-column .wall-poll .wall-card-heading{margin-bottom:14px}
+.wall-column .wall-poll-question{margin-bottom:12px}
+.wall-column .wall-poll-options{gap:8px}
+.wall-column .wall-activity{height:150px}
