@@ -150,6 +150,7 @@ export const themeSchema = section({
     status_offline: hexColour(), status_hidden: hexColour(), status_looking: hexColour(),
   }),
   accent: section({ accent_main: hexColour() }),
+  actions: section({ action_music: hexColour(), action_poll: hexColour(), action_activity: hexColour() }),
   night_mode: section({
     surface_wall: hexColour(), surface_card: hexColour(), surface_raised: hexColour(),
     text_primary: hexColour(), text_secondary: hexColour(), text_quiet: hexColour(),

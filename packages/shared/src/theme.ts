@@ -4,7 +4,7 @@ import type { ThemeConfig } from './config/schemas.ts';
 type Palette = Record<string, string>;
 
 export function dayPalette(theme: ThemeConfig): Palette {
-  return { ...theme.surfaces, ...theme.text, ...theme.status, ...theme.accent };
+  return { ...theme.surfaces, ...theme.text, ...theme.status, ...theme.accent, ...theme.actions };
 }
 
 export function nightPalette(theme: ThemeConfig): Palette {

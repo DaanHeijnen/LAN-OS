@@ -35,6 +35,15 @@ accent:
   # progress bars, leading vote option, link between players in the same game (never a status) (--accent)
   accent_main: "#B9B3E6"
 
+# Player dashboard action buttons, in one palette with Spotify green. Night mode uses these too.
+actions:
+  # Request a song and Add track (Spotify green) (--action-music)
+  action_music: "#1DB954"
+  # Start a poll and + New poll (--action-poll)
+  action_poll: "#9B8CF4"
+  # Propose activity and + Propose (--action-activity)
+  action_activity: "#F2994A"
+
 # Night mode: the same theme, dimmer and warmer. Same keys as above, same places.
 night_mode:
   # night version: background of the whole wall, player app and admin page (--surface-wall)

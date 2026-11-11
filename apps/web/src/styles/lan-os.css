@@ -285,8 +285,6 @@ button.bingo-square:disabled{cursor:not-allowed}
 .wall-column .wall-poll-question{margin-bottom:12px}
 .wall-column .wall-poll-options{gap:8px}
 .wall-column .wall-activity{height:150px}
-/* Admin: every menu item is its own page; its cards stack in one column. */
-.admin-page-cards{display:flex;flex-direction:column;gap:21px;max-width:1000px}
 /* Game pot: player dashboard and admin page. */
 .pot-panel .fair-note{margin:0 21px 14px}
 .pot-help{margin:0 21px 12px;line-height:1.5}
@@ -308,3 +306,30 @@ button.bingo-square:disabled{cursor:not-allowed}
 .pot-review input{width:160px;min-width:0}
 /* A drawn pot game in the wall lineup. */
 .twall-lineup-row .twall-pot{color:var(--accent);font-weight:760}
+/* Admin and Player switch in the top bar: admins (host PC and players with the admin role) flip between the two views. */
+.mode-switch{display:inline-flex;gap:2px;padding:3px;border-radius:10px;background:var(--muted-bg);border:1px solid var(--border)}
+.mode-switch a{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:7px;font-size:11px;font-weight:720;color:var(--text-secondary);text-decoration:none}
+.mode-switch a .icon{width:14px;height:14px}
+.mode-switch a:hover{color:var(--text-primary)}
+.mode-switch a.active{background:var(--accent);color:var(--surface-wall)}
+/* Player dashboard action buttons, one colour per kind of action (theme.yaml → actions). */
+.button.action-button{color:var(--surface-wall);font-weight:760}
+.button.action-music{background:var(--action-music);border-color:var(--action-music)}
+.button.action-poll{background:var(--action-poll);border-color:var(--action-poll)}
+.button.action-activity{background:var(--action-activity);border-color:var(--action-activity)}
+.button.action-button:hover:not(:disabled){filter:brightness(1.1)}
+.button.action-button:disabled{opacity:.5;cursor:not-allowed}
+.text-button.action-music{color:var(--action-music)}
+.text-button.action-poll{color:var(--action-poll)}
+.text-button.action-activity{color:var(--action-activity)}
+/* Admin control room: one page in labelled sections; the sidebar jumps to them and shows where you are. */
+html:has(body.admin-page){scroll-behavior:smooth}
+.admin-section{scroll-margin-top:24px;margin-top:38px}
+.admin-section:first-of-type{margin-top:6px}
+.admin-section-head{display:flex;align-items:center;gap:14px;padding-bottom:14px;margin-bottom:18px;border-bottom:1px solid var(--border)}
+.admin-section-icon{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;background:rgba(185,179,230,.12);color:var(--accent);flex:none}
+.admin-section-icon .icon{width:19px;height:19px}
+.admin-section-head h2{margin:0;font-size:20px;letter-spacing:-.03em}
+.admin-section-head p{margin:2px 0 0;font-size:12px;color:var(--text-secondary)}
+.admin-section-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(440px,1fr));gap:21px;align-items:start}
+.admin-section .metrics{margin-bottom:0}

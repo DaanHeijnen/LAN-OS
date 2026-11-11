@@ -160,7 +160,11 @@ export function playerRoutes(app: FastifyInstance, c: AppContext, h: Helpers): v
     return h.attempt(reply, () => c.hub.pot.remove(id(request), { playerId: session.playerId, isAdmin: c.hub.isAdmin(session) }));
   });
 
-  // --- History and LAN Wrapped (visible to everyone on the LAN) ---
+  // --- History and LAN Wrapped ---
+  // LAN Wrapped is a surprise: players only see a LAN once an admin publishes it; admins can always preview it.
+
+  const published = (lanId: string) => c.hub.runtime().recap_published.includes(lanId);
+  const NOT_YET = { error: 'LAN Wrapped is still a surprise. It opens when the host says the weekend is done.' };
 
   const recapFor = (lan: string | undefined, range: string | undefined) => {
     const lanId = lan || c.hub.lanId;
@@ -181,15 +185,20 @@ export function playerRoutes(app: FastifyInstance, c: AppContext, h: Helpers): v
 
   app.get('/api/recap', async (request, reply) => {
     const { lan, range } = request.query as { lan?: string; range?: string };
+    if (!h.isAdmin(request) && !published(lan || c.hub.lanId)) return reply.code(403).send(NOT_YET);
     const recap = recapFor(lan, range);
     return recap ? reply.send(recap) : reply.code(404).send({ error: 'No LAN with that name.' });
   });
 
-  app.get('/api/recap/lans', async (_request, reply) =>
-    reply.send(lanSummaries(c.db, pid => c.hub.nickname(pid), lanId => c.hub.runtime().recap_published.includes(lanId))));
+  app.get('/api/recap/lans', async (request, reply) => {
+    const lans = lanSummaries(c.db, pid => c.hub.nickname(pid), published);
+    return reply.send(h.isAdmin(request) ? lans : lans.filter(l => l.final));
+  });
 
   app.get('/recap/:lan/export.html', async (request, reply) => {
-    const recap = recapFor((request.params as { lan: string }).lan, 'all');
+    const lan = (request.params as { lan: string }).lan;
+    if (!h.isAdmin(request) && !published(lan)) return reply.code(403).type('text/plain').send(NOT_YET.error);
+    const recap = recapFor(lan, 'all');
     if (!recap) return reply.code(404).type('text/plain').send('No LAN with that name.');
     return reply.type('text/html; charset=utf-8')
       .header('Content-Disposition', `attachment; filename="${recap.lan.id}-wrapped.html"`)

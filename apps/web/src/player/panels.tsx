@@ -104,7 +104,7 @@ export function RadioPanel({ snapshot, me, now, collapsed, onToggle, open }: Pan
         <div className="fair-note"><Icon name="users-round" /> One song per requester per round. Everyone gets a turn.</div>
         <div className="radio-actions">
           <span className="muted text-sm">{radio.requestsOpen ? 'Requests are added immediately' : radio.requestsClosedReason ?? 'Requests are paused'}</span>
-          <button className="text-button" disabled={!radio.requestsOpen} onClick={() => open('song')}>Add track <Icon name="arrow-right" /></button>
+          <button className="text-button action-text action-music" disabled={!radio.requestsOpen} onClick={() => open('song')}>Add track <Icon name="arrow-right" /></button>
         </div>
       </div></div>
     </section>
@@ -214,7 +214,7 @@ export function PollsPanel({ snapshot, me, now, collapsed, onToggle, open }: Pan
             <PollCard poll={p} me={me} now={now} timezone={snapshot.event.timezone} />
           </details>
         ))}
-        <div className="poll-bottom" style={{ padding: '0 22px 20px' }}><span /><button className="text-button" onClick={() => open('poll')}>+ New poll</button></div>
+        <div className="poll-bottom" style={{ padding: '0 22px 20px' }}><span /><button className="text-button action-text action-poll" onClick={() => open('poll')}>+ New poll</button></div>
       </div>
     </section>
   );
@@ -311,7 +311,7 @@ export function ActivitiesPanel({ snapshot, me, now, collapsed, onToggle, open }
     <section className={`card activity-panel ${collapsed ? 'collapsed' : ''}`} id="activities" data-panel="activities">
       <div className="section-header">
         <div><div className="section-overline">UP NEXT</div><h2>Coming up</h2></div>
-        <div className="card-header-actions"><button className="text-button" onClick={() => open('activity')}>+ Propose</button><CollapseButton onToggle={onToggle} label="activities" /></div>
+        <div className="card-header-actions"><button className="text-button action-text action-activity" onClick={() => open('activity')}>+ Propose</button><CollapseButton onToggle={onToggle} label="activities" /></div>
       </div>
       <div id="player-activity">
         {current.map(a => <ActivityCard key={a.id} a={a} me={me} now={now} />)}
@@ -319,7 +319,7 @@ export function ActivitiesPanel({ snapshot, me, now, collapsed, onToggle, open }
           {snapshot.suggestion
             ? <div className="fair-note suggestion"><Icon name="users-round" /> {listNames(snapshot.suggestion.players)} are free right now. Propose something to do together?</div>
             : <p className="muted">Nothing planned. Propose a game, a food break or something IRL.</p>}
-          <button className="button button-soft button-small" onClick={() => open('activity')}><Icon name="calendar-plus" /> Propose activity</button>
+          <button className="button button-small action-button action-activity" onClick={() => open('activity')}><Icon name="calendar-plus" /> Propose activity</button>
         </div>}
         {recent.map(a => <p className="muted text-sm activity-ended" key={a.id}>{a.title} · {a.status === 'ended' ? `ended with ${a.joined} players` : 'cancelled'}</p>)}
       </div>

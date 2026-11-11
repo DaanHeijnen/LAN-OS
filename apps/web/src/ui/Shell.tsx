@@ -55,6 +55,16 @@ function Nav({ items }: { items: NavItem[] }) {
   );
 }
 
+/** Admins (the host PC and players with the admin role) switch between the player dashboard and the control room here. */
+export function ModeSwitch({ mode }: { mode: 'player' | 'admin' }) {
+  return (
+    <nav className="mode-switch" aria-label="Switch view">
+      <a href="/app" className={mode === 'player' ? 'active' : undefined} aria-current={mode === 'player' ? 'page' : undefined}><Icon name="users-round" />Player</a>
+      <a href="/admin" className={mode === 'admin' ? 'active' : undefined} aria-current={mode === 'admin' ? 'page' : undefined}><Icon name="sliders-horizontal" />Admin</a>
+    </nav>
+  );
+}
+
 export function TopAvatar({ nickname, tone }: { nickname: string; tone: number }) {
   return <Avatar nickname={nickname} tone={tone} className="top-avatar" />;
 }

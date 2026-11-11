@@ -1,6 +1,6 @@
 // The admin control room (/admin).
 // On the host PC it always opens; elsewhere it needs an admin player or the admin password.
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import {
   clockTime, formatDuration, WALL_PANELS,
   type AdminInfo, type AdminPlayer, type LiveSnapshot, type ServiceHealth,
@@ -10,7 +10,7 @@ import { AlbumArt, livePosition } from '../player/panels.tsx';
 import { AdminSignIn, useSignedIn } from '../player/SignIn.tsx';
 import { Avatar, Modal, StatusDot, Switch, useAction, useToast } from '../ui/common.tsx';
 import { Icon, type IconName } from '../ui/Icon.tsx';
-import { AllSystems, Shell, TopAvatar } from '../ui/Shell.tsx';
+import { AllSystems, ModeSwitch, Shell, TopAvatar } from '../ui/Shell.tsx';
 import { mmss } from '../format.ts';
 import { GamePotCard } from './PotAdmin.tsx';
 import { TournamentCard } from './TournamentAdmin.tsx';
@@ -19,61 +19,63 @@ import '../styles/lan-os.css';
 
 const PANEL_LABEL: Record<(typeof WALL_PANELS)[number], string> = { music: 'Music', poll: 'Poll', activity: 'Activity' };
 
-/** Each menu item is its own page at /admin/<slug>. */
-const PAGES = [
-  { slug: '', icon: 'layout-dashboard', label: 'Overview', title: 'Control room', subtitle: "Everything running smoothly? You shouldn't need to touch much." },
-  { slug: 'projector', icon: 'projector', label: 'Projector', title: 'Projector', subtitle: 'What the big screen shows, and how bright it is.' },
-  { slug: 'announcements', icon: 'megaphone', label: 'Announcements', title: 'Announcements', subtitle: 'Put a message on the projector.' },
-  { slug: 'tournament', icon: 'trophy', label: 'Tournament', title: 'Tournament', subtitle: 'Set up and run the tournament.' },
-  { slug: 'game-pot', icon: 'gamepad-2', label: 'Game pot', title: 'Game pot', subtitle: 'Games players added: approve them and draw the wildcards.' },
-  { slug: 'people', icon: 'users-round', label: 'People & access', title: 'People & access', subtitle: 'The roster, and who can sign in.' },
-  { slug: 'polls', icon: 'chart-no-axes-column', label: 'Polls & activities', title: 'Polls & activities', subtitle: 'Votes and planned activities.' },
-  { slug: 'radio', icon: 'music-2', label: 'LAN Radio', title: 'LAN Radio', subtitle: 'Playback, the queue and requests.' },
-  { slug: 'history', icon: 'history', label: 'History & Wrapped', title: 'History & Wrapped', subtitle: 'What happened, and LAN Wrapped.' },
-  { slug: 'systems', icon: 'activity', label: 'Integrations & logs', title: 'Integrations & logs', subtitle: 'Steam, Spotify, Discord and crash reports.' },
-  { slug: 'safety', icon: 'shield-alert', label: 'Safety controls', title: 'Safety controls', subtitle: 'Quick switches for when something goes wrong.' },
-] as const satisfies ReadonlyArray<{ slug: string; icon: IconName; label: string; title: string; subtitle: string }>;
-type Page = (typeof PAGES)[number];
+/** The sections of the control room, top to bottom. The sidebar menu jumps to them and shows where you are. */
+const SECTIONS = [
+  { id: 'overview', icon: 'layout-dashboard', label: 'Overview', subtitle: 'The room at a glance.' },
+  { id: 'projector', icon: 'projector', label: 'Projector', subtitle: 'What the big screen shows, and how bright it is.' },
+  { id: 'announcements', icon: 'megaphone', label: 'Announcements', subtitle: 'Put a message on the projector.' },
+  { id: 'tournament', icon: 'trophy', label: 'Tournament', subtitle: 'Set up and run the tournament.' },
+  { id: 'game-pot', icon: 'gamepad-2', label: 'Game pot', subtitle: 'Games players added: approve them and draw the wildcards.' },
+  { id: 'people', icon: 'users-round', label: 'People & access', subtitle: 'The roster, and who can sign in.' },
+  { id: 'polls', icon: 'chart-no-axes-column', label: 'Polls & activities', subtitle: 'Votes and planned activities.' },
+  { id: 'radio', icon: 'music-2', label: 'LAN Radio', subtitle: 'Playback, the queue and requests.' },
+  { id: 'history', icon: 'history', label: 'History & Wrapped', subtitle: 'What happened, and the LAN Wrapped surprise.' },
+  { id: 'systems', icon: 'activity', label: 'Integrations & logs', subtitle: 'Steam, Spotify, Discord and crash reports.' },
+  { id: 'safety', icon: 'shield-alert', label: 'Safety controls', subtitle: 'Quick switches for when something goes wrong.' },
+] as const satisfies ReadonlyArray<{ id: string; icon: IconName; label: string; subtitle: string }>;
+type SectionId = (typeof SECTIONS)[number]['id'];
 
-const pageFromPath = (pathname: string): Page =>
-  PAGES.find(p => p.slug === pathname.replace(/^\/admin\/?/, '').replace(/\/+$/, '')) ?? PAGES[0];
+/** A section counts as "in view" once its top is this close to the top of the window. */
+const SECTION_LINE_PX = 140;
 
-/** Follows /admin/... links without reloading the page; the browser's back button works too. */
-function useAdminPage(): Page {
-  const [page, setPage] = useState(() => pageFromPath(location.pathname));
+/** Which section is in view, for the sidebar highlight. */
+function useSectionInView(ids: string[]): string {
+  const key = ids.join(',');
+  const [current, setCurrent] = useState(ids[0] ?? '');
   useEffect(() => {
-    const onPop = () => setPage(pageFromPath(location.pathname));
-    const onClick = (e: MouseEvent) => {
-      const link = (e.target as Element | null)?.closest?.('a');
-      if (!link || link.target || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-      const url = new URL(link.href);
-      if (url.origin !== location.origin || !/^\/admin(\/|$)/.test(url.pathname)) return;
-      e.preventDefault();
-      if (url.pathname !== location.pathname) history.pushState(null, '', url.pathname);
-      setPage(pageFromPath(url.pathname));
-      window.scrollTo(0, 0);
+    const list = key.split(',');
+    const pick = () => {
+      // The last section whose top has scrolled near the top of the window; the last one once you reach the bottom.
+      const line = SECTION_LINE_PX;
+      const atBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4;
+      let found = list[0] ?? '';
+      for (const id of list) {
+        const el = document.getElementById(`section-${id}`);
+        if (el && el.getBoundingClientRect().top <= line) found = id;
+      }
+      setCurrent(atBottom ? (list.at(-1) ?? found) : found);
     };
-    window.addEventListener('popstate', onPop);
-    document.addEventListener('click', onClick);
+    pick();
+    window.addEventListener('scroll', pick, { passive: true });
+    window.addEventListener('resize', pick);
     return () => {
-      window.removeEventListener('popstate', onPop);
-      document.removeEventListener('click', onClick);
+      window.removeEventListener('scroll', pick);
+      window.removeEventListener('resize', pick);
     };
-  }, []);
-  return page;
+  }, [key]);
+  return current;
 }
 
 export default function Admin() {
   const auth = useSignedIn('admin');
   const { snapshot, connected, offsetMs } = useLive('admin');
   const now = useNow(offsetMs);
-  const page = useAdminPage();
+  const sections = SECTIONS.filter(s => s.id !== 'game-pot' || snapshot?.gamePot.enabled);
+  const inView = useSectionInView(sections.map(s => s.id));
   useEffect(() => {
     document.body.className = 'app-shell admin-page';
+    document.title = 'LAN OS · Admin control room';
   }, []);
-  useEffect(() => {
-    document.title = `LAN OS · Admin · ${page.label}`;
-  }, [page]);
 
   if (!auth) return null;
   if (!auth.isAdmin) return <AdminSignIn passwordSet={auth.adminPasswordSet} />;
@@ -83,21 +85,33 @@ export default function Admin() {
   // Demo mode needs no setup, so it never nags.
   const setupDone = snapshot.demo || (admin.setup.adminPassword && admin.setup.spotifyConnected);
   const waitingGames = snapshot.gamePot.entries.filter(e => e.state === 'waiting').length;
+  const content: Record<SectionId, ReactNode> = {
+    overview: <Metrics snapshot={snapshot} admin={admin} />,
+    projector: <ProjectorCard snapshot={snapshot} now={now} />,
+    announcements: <MessageCard snapshot={snapshot} />,
+    tournament: <TournamentCard snapshot={snapshot} now={now} />,
+    'game-pot': <GamePotCard snapshot={snapshot} />,
+    people: <PeopleCard admin={admin} snapshot={snapshot} />,
+    polls: <><PollsCard snapshot={snapshot} /><ActivitiesCard snapshot={snapshot} now={now} /></>,
+    radio: <MusicCard snapshot={snapshot} now={now} />,
+    history: <><WrappedCard snapshot={snapshot} /><HistoryCard admin={admin} timezone={snapshot.event.timezone} /></>,
+    systems: <><HealthCard snapshot={snapshot} admin={admin} /><DiscordCard admin={admin} /><CrashCard admin={admin} /></>,
+    safety: <SafetyCard snapshot={snapshot} />,
+  };
 
   return (
     <Shell
-      snapshot={snapshot} now={now} sectionLabel="CONTROL ROOM" breadcrumb={`ADMIN CONSOLE / ${page.label.toUpperCase()}`}
-      nav={PAGES.filter(p => p.slug !== 'game-pot' || snapshot.gamePot.enabled).map(p => ({
-        href: p.slug ? `/admin/${p.slug}` : '/admin', icon: p.icon, label: p.label, active: p === page,
-        ...(p.slug === 'tournament' && snapshot.tournament?.state === 'live' ? { count: 1 } : {}),
-        ...(p.slug === 'game-pot' && waitingGames > 0 ? { count: waitingGames } : {}),
+      snapshot={snapshot} now={now} sectionLabel="CONTROL ROOM" breadcrumb="ADMIN CONSOLE"
+      nav={sections.map(s => ({
+        href: `#section-${s.id}`, icon: s.icon, label: s.label, active: s.id === inView,
+        ...(s.id === 'tournament' && snapshot.tournament?.state === 'live' ? { count: 1 } : {}),
+        ...(s.id === 'game-pot' && waitingGames > 0 ? { count: waitingGames } : {}),
       }))}
       extraLabel="SHORTCUTS"
       extraNav={[
         { href: '/setup', icon: 'sliders-horizontal', label: 'Setup', ...(setupDone ? {} : { count: 1 }) },
         { href: '/wall', icon: 'monitor', label: 'Open projector', trailing: true, target: '_blank' },
-        { href: '/recap', icon: 'history', label: 'LAN Wrapped' },
-        ...(me ? [{ href: '/app', icon: 'arrow-left' as IconName, label: 'Back to player view' }] : []),
+        { href: '/recap', icon: 'history', label: 'LAN Wrapped (preview)' },
       ]}
       health={<><StatusDot level={snapshot.health.server.level} /> Local server {snapshot.health.server.level === 'ok' ? 'healthy' : 'needs attention'}</>}
       account={<div className="admin-account">
@@ -108,7 +122,7 @@ export default function Admin() {
       </div>}
       topbar={<>
         <AllSystems snapshot={snapshot} connected={connected} />
-        <span className="tag tag-admin">ADMIN ACCESS</span>
+        <ModeSwitch mode="admin" />
         {me && <TopAvatar nickname={me.nickname} tone={me.tone} />}
       </>}
     >
@@ -116,32 +130,21 @@ export default function Admin() {
         <div className="page-head admin-page-head">
           <div>
             <p className="eyebrow"><span className="eyebrow-dot" /> LAN MANAGEMENT · {snapshot.demo ? 'DEMO MODE' : 'LIVE SESSION'}</p>
-            <h1>{page.title}<span className="soft-period">.</span></h1>
-            <p className="page-subtitle">{page.subtitle}</p>
+            <h1>Control room<span className="soft-period">.</span></h1>
+            <p className="page-subtitle">Everything running smoothly? You shouldn't need to touch much.</p>
           </div>
           <a className="button button-primary" href="/wall" target="_blank" rel="noreferrer"><Icon name="external-link" /> Open projector</a>
         </div>
         {!setupDone && <a className="fair-note setup-nudge" href="/setup"><Icon name="info" /> Setup isn't finished yet{!admin.setup.spotifyConnected ? ': LAN Radio needs your Spotify account' : ''}. <b>Open setup →</b></a>}
-        {page.slug === '' ? <>
-          <Metrics snapshot={snapshot} admin={admin} />
-          <div className="admin-grid">
-            <div className="admin-left"><MessageCard snapshot={snapshot} /></div>
-            <div className="admin-right"><HealthCard snapshot={snapshot} admin={admin} /></div>
-          </div>
-        </> : (
-          <div className="admin-page-cards">
-            {page.slug === 'projector' && <ProjectorCard snapshot={snapshot} now={now} />}
-            {page.slug === 'announcements' && <MessageCard snapshot={snapshot} />}
-            {page.slug === 'tournament' && <TournamentCard snapshot={snapshot} now={now} />}
-            {page.slug === 'game-pot' && <GamePotCard snapshot={snapshot} />}
-            {page.slug === 'people' && <PeopleCard admin={admin} snapshot={snapshot} />}
-            {page.slug === 'polls' && <><PollsCard snapshot={snapshot} /><ActivitiesCard snapshot={snapshot} now={now} /></>}
-            {page.slug === 'radio' && <MusicCard snapshot={snapshot} now={now} />}
-            {page.slug === 'history' && <><WrappedCard snapshot={snapshot} /><HistoryCard admin={admin} timezone={snapshot.event.timezone} /></>}
-            {page.slug === 'systems' && <><HealthCard snapshot={snapshot} admin={admin} /><DiscordCard admin={admin} /><CrashCard admin={admin} /></>}
-            {page.slug === 'safety' && <SafetyCard snapshot={snapshot} />}
-          </div>
-        )}
+        {sections.map(s => (
+          <section className="admin-section" id={`section-${s.id}`} key={s.id} aria-labelledby={`section-${s.id}-title`}>
+            <header className="admin-section-head">
+              <span className="admin-section-icon"><Icon name={s.icon} /></span>
+              <div><h2 id={`section-${s.id}-title`}>{s.label}</h2><p>{s.subtitle}</p></div>
+            </header>
+            <div className={s.id === 'overview' ? undefined : 'admin-section-cards'}>{content[s.id]}</div>
+          </section>
+        ))}
         <div className="footer-note">Settings are saved in the config/ folder · Keys in .env · {snapshot.demo ? 'Demo mode: pretend players and music' : 'LAN-only'}</div>
       </main>
     </Shell>
@@ -393,7 +396,7 @@ function WrappedCard({ snapshot }: { snapshot: LiveSnapshot }) {
         <span className="tiny-pill accent-pill">{snapshot.recapPublished ? 'PUBLISHED' : 'SO FAR'}</span></div>
       <div className="admin-poll-detail">
         <div><strong>{snapshot.recapPublished ? 'The final recap is out' : 'Publish the final recap on the last day'}</strong>
-          <small>Everyone can always see the weekend so far. Publishing marks it final and announces it on the wall.</small></div>
+          <small>It's a surprise: only admins can open it until you publish. Publishing marks it final, shows it to everyone and announces it on the wall.</small></div>
         <span style={{ display: 'flex', gap: 8 }}>
           <a className="button button-quiet button-small" href="/recap" target="_blank" rel="noreferrer">Open</a>
           <button className="button button-soft button-small" onClick={() => void run(() => api('/api/admin/recap', 'POST', { published: !snapshot.recapPublished }),

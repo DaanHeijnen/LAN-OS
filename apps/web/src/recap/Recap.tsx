@@ -34,7 +34,7 @@ export default function Recap() {
     void api<RecapData>(`/api/recap?${q}`, 'GET').then(r => { setRecap(r); setError(null); }, e => setError(e instanceof Error ? e.message : String(e)));
   }, [range, lanFromPath]);
 
-  if (error) return <div className="sign-in"><p className="form-error">{error}</p><a className="text-button" href="/recap">Back to this LAN</a></div>;
+  if (error) return <div className="sign-in"><p className="form-error">{error}</p><a className="text-button" href="/app">Back to your dashboard</a></div>;
   if (!recap) return null;
   const tz = recap.lan.timezone;
   const days = Math.max(1, Math.ceil((Date.parse(recap.lan.endsAt) - Date.parse(recap.lan.startsAt)) / 86_400_000));

@@ -9,7 +9,7 @@ import { api, useLive, useNow } from '../live.ts';
 import { groupRoster } from '../roster.ts';
 import { Avatar, Modal, StatusDot, Switch, useAction, useToast } from '../ui/common.tsx';
 import { Icon, type IconName } from '../ui/Icon.tsx';
-import { AllSystems, Shell, TopAvatar } from '../ui/Shell.tsx';
+import { AllSystems, ModeSwitch, Shell, TopAvatar } from '../ui/Shell.tsx';
 import { ActivitiesPanel, ActivityModal, HistoryPanel, PollModal, PollsPanel, RadioPanel, SongModal, type Panel } from './panels.tsx';
 import { useSignedIn } from './SignIn.tsx';
 import { GamePotPanel } from './pot.tsx';
@@ -114,10 +114,9 @@ export default function Player() {
           { href: '#radio', icon: 'music-2', label: 'LAN Radio', count: snapshot.radio.queue.length },
           { href: '#polls', icon: 'chart-no-axes-column', label: 'Polls & activities', ...(openPolls ? { count: openPolls } : {}) },
           { href: '#game-finder', icon: 'gamepad-2', label: 'Games & friends' },
-          { href: '/recap', icon: 'history', label: 'LAN Wrapped' },
+          // LAN Wrapped is a surprise: players see it once an admin publishes it; admins can preview it.
+          ...(snapshot.recapPublished || me.isAdmin ? [{ href: '/recap', icon: 'history' as IconName, label: snapshot.recapPublished ? 'LAN Wrapped' : 'LAN Wrapped (preview)' }] : []),
         ]}
-        extraLabel="MANAGEMENT"
-        extraNav={me.isAdmin ? [{ href: '/admin', icon: 'sliders-horizontal', label: 'Admin tools', trailing: true }] : []}
         health={<><StatusDot level={snapshot.health.steam.level} />{snapshot.health.steam.level === 'ok' ? 'Steam connected' : snapshot.health.steam.label}
           <span className="muted">· {snapshot.health.steam.level === 'ok' ? 'live sync' : 'see admin'}</span></>}
         account={<button type="button" className="account-switch" onClick={() => setModal('status')}>
@@ -126,6 +125,7 @@ export default function Player() {
         </button>}
         topbar={<>
           <AllSystems snapshot={snapshot} connected={connected} />
+          {me.isAdmin && <ModeSwitch mode="player" />}
           <button type="button" className="icon-btn" aria-label="Customize dashboard" title="Customize panels" onClick={() => setModal('customize')}><Icon name="sliders-horizontal" /></button>
           <button type="button" className="icon-btn" aria-label="Toggle mini dashboard" title="Toggle mini dashboard"
             onClick={() => { setLayout({ ...layout, compact: !layout.compact }); if (!layout.compact) toast('Compact second-screen view enabled.'); }}><Icon name="panels-top-left" /></button>
@@ -135,11 +135,11 @@ export default function Player() {
         <main className="main-content player-main" id="overview">
           <PageHead snapshot={snapshot} me={me} now={now} />
           <div className="quick-actions">
-            <button className="button button-primary" disabled={!snapshot.radio.requestsOpen} onClick={() => open('song')}
+            <button className="button action-button action-music" disabled={!snapshot.radio.requestsOpen} onClick={() => open('song')}
               title={snapshot.radio.requestsOpen ? undefined : snapshot.radio.message ?? snapshot.radio.requestsClosedReason ?? undefined}>
               <Icon name="plus" /> Request a song <Icon name="arrow-up-right" className="button-tail" /></button>
-            <button className="button button-soft" onClick={() => open('poll')}><Icon name="chart-no-axes-column" /> Start a poll</button>
-            <button className="button button-soft" onClick={() => open('activity')}><Icon name="calendar-plus" /> Propose activity</button>
+            <button className="button action-button action-poll" onClick={() => open('poll')}><Icon name="chart-no-axes-column" /> Start a poll</button>
+            <button className="button action-button action-activity" onClick={() => open('activity')}><Icon name="calendar-plus" /> Propose activity</button>
             <button className="button button-quiet" onClick={() => setModal('status')}><Icon name="scan-face" /> Your status <Icon name="chevron-down" /></button>
           </div>
           {snapshot.recapPublished && <div className="fair-note recap-ready"><Icon name="history" /> LAN Wrapped is ready. <a className="text-button" href="/recap">See the weekend in numbers <Icon name="arrow-right" /></a></div>}
