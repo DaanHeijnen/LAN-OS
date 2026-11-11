@@ -77,6 +77,13 @@ export function seedDemo(db: Db, store: ConfigStore, accounts: Accounts, now = n
       add(2, 'Blinding Lights', 'waiting', 6);
       add(5, 'Take Five', 'waiting', 5);
     }
+    // The game pot: three games thrown in, two approved and one waiting for the host.
+    if (ids.length >= 3) {
+      const pot = db.prepare(`INSERT INTO game_pot (lan_id, player_id, name, link, how, state, added_at) VALUES (?, ?, ?, ?, ?, ?, ?)`);
+      pot.run(event.lan_id, ids[0], 'Krunker', 'https://krunker.io', 'Browser shooter, free-for-all, 8 players', 'approved', ago(30).toISOString());
+      pot.run(event.lan_id, ids[1], 'Gartic Phone', 'https://garticphone.com', 'Drawing telephone, everyone at once', 'approved', ago(25).toISOString());
+      pot.run(event.lan_id, ids[2], 'Teeworlds', 'https://teeworlds.com', 'Free 2D shooter, deathmatch on LAN', 'waiting', ago(12).toISOString());
+    }
     // Nick is looking for players in the design.
     if (players[3]) saveProfile(db, event.lan_id, players[3].id, { looking: true }, now);
   })();

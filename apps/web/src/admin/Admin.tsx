@@ -12,6 +12,7 @@ import { Avatar, Modal, StatusDot, Switch, useAction, useToast } from '../ui/com
 import { Icon, type IconName } from '../ui/Icon.tsx';
 import { AllSystems, Shell, TopAvatar } from '../ui/Shell.tsx';
 import { mmss } from '../format.ts';
+import { GamePotCard } from './PotAdmin.tsx';
 import { TournamentCard } from './TournamentAdmin.tsx';
 import '../styles/app.css';
 import '../styles/lan-os.css';
@@ -24,6 +25,7 @@ const PAGES = [
   { slug: 'projector', icon: 'projector', label: 'Projector', title: 'Projector', subtitle: 'What the big screen shows, and how bright it is.' },
   { slug: 'announcements', icon: 'megaphone', label: 'Announcements', title: 'Announcements', subtitle: 'Put a message on the projector.' },
   { slug: 'tournament', icon: 'trophy', label: 'Tournament', title: 'Tournament', subtitle: 'Set up and run the tournament.' },
+  { slug: 'game-pot', icon: 'gamepad-2', label: 'Game pot', title: 'Game pot', subtitle: 'Games players added: approve them and draw the wildcards.' },
   { slug: 'people', icon: 'users-round', label: 'People & access', title: 'People & access', subtitle: 'The roster, and who can sign in.' },
   { slug: 'polls', icon: 'chart-no-axes-column', label: 'Polls & activities', title: 'Polls & activities', subtitle: 'Votes and planned activities.' },
   { slug: 'radio', icon: 'music-2', label: 'LAN Radio', title: 'LAN Radio', subtitle: 'Playback, the queue and requests.' },
@@ -80,13 +82,15 @@ export default function Admin() {
   const me = snapshot.me;
   // Demo mode needs no setup, so it never nags.
   const setupDone = snapshot.demo || (admin.setup.adminPassword && admin.setup.spotifyConnected);
+  const waitingGames = snapshot.gamePot.entries.filter(e => e.state === 'waiting').length;
 
   return (
     <Shell
       snapshot={snapshot} now={now} sectionLabel="CONTROL ROOM" breadcrumb={`ADMIN CONSOLE / ${page.label.toUpperCase()}`}
-      nav={PAGES.map(p => ({
+      nav={PAGES.filter(p => p.slug !== 'game-pot' || snapshot.gamePot.enabled).map(p => ({
         href: p.slug ? `/admin/${p.slug}` : '/admin', icon: p.icon, label: p.label, active: p === page,
         ...(p.slug === 'tournament' && snapshot.tournament?.state === 'live' ? { count: 1 } : {}),
+        ...(p.slug === 'game-pot' && waitingGames > 0 ? { count: waitingGames } : {}),
       }))}
       extraLabel="SHORTCUTS"
       extraNav={[
@@ -129,6 +133,7 @@ export default function Admin() {
             {page.slug === 'projector' && <ProjectorCard snapshot={snapshot} now={now} />}
             {page.slug === 'announcements' && <MessageCard snapshot={snapshot} />}
             {page.slug === 'tournament' && <TournamentCard snapshot={snapshot} now={now} />}
+            {page.slug === 'game-pot' && <GamePotCard snapshot={snapshot} />}
             {page.slug === 'people' && <PeopleCard admin={admin} snapshot={snapshot} />}
             {page.slug === 'polls' && <><PollsCard snapshot={snapshot} /><ActivitiesCard snapshot={snapshot} now={now} /></>}
             {page.slug === 'radio' && <MusicCard snapshot={snapshot} now={now} />}

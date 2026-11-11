@@ -27,6 +27,7 @@ import { PresenceTracker } from '../presence/tracker.ts';
 import type { MusicService } from '../radio/music.ts';
 import { Radio } from '../radio/radio.ts';
 import { SpotifyApi, type SpotifyTokens } from '../radio/spotify.ts';
+import { GamePot } from '../tournament/pot.ts';
 import { Tournament } from '../tournament/tournament.ts';
 
 /** Bundle quick changes into one update for the screens. */
@@ -82,6 +83,7 @@ export class LiveHub {
   readonly polls: Polls;
   readonly activities: Activities;
   readonly tournament: Tournament;
+  readonly pot: GamePot;
   readonly announcer: Announcer;
   readonly backups: Backups;
   readonly gameFinder: GameFinder;
@@ -130,6 +132,14 @@ export class LiveHub {
       playerIds: () => this.players.map(p => p.id),
       nickname: id => this.nickname(id),
       announce: (text, ms) => this.showAnnouncement(text, 'major', ms, 'tournament'),
+    });
+    this.pot = new GamePot({
+      ...common,
+      playerIds: () => this.players.map(p => p.id),
+      nickname: id => this.nickname(id),
+      tournament: this.tournament,
+      submissionsBlocked: () => this.submissionsBlocked(),
+      announce: (text, ms) => this.showAnnouncement(text, 'major', ms, 'game_pot'),
     });
     this.announcer = new Announcer({
       store: options.store,
@@ -495,6 +505,9 @@ export class LiveHub {
       gameFinder: forWall ? { available: false, reason: null, games: [] }
         : this.gameFinder.info(this.players.map(p => ({ nickname: p.nickname, steamId: this.steamIdOf(p) })), this.o.demo),
       tournament: this.tournament.info(),
+      gamePot: this.pot.info({
+        playerId: viewer, admin: screen === 'admin' && this.isAdmin(session), hideNames: forWall && runtime.hide_public,
+      }),
     };
     // Anonymous or hidden details never reach the wall.
     if (forWall && runtime.hide_public) snapshot.polls = snapshot.polls.map(p => ({ ...p, votersByOption: p.options.map(() => []) }));
@@ -510,7 +523,10 @@ export class LiveHub {
     }
     if (screen === 'admin' && this.isAdmin(session)) {
       const integrations = this.o.store.get('integrations');
+      const tournamentConfig = this.o.store.get('tournament');
       snapshot.admin = {
+        plannedLineup: tournamentConfig.planned_lineup.length
+          ? { name: tournamentConfig.planned_lineup_name, games: tournamentConfig.planned_lineup.map(g => g.name) } : null,
         players: this.players.map((p, index) => {
           const token = this.o.accounts.joinLinkFor(p.id);
           return {

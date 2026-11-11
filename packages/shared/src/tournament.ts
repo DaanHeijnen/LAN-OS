@@ -151,3 +151,55 @@ export const tournamentRoundSchema = z.strictObject({
 });
 
 export const bingoTickSchema = z.strictObject({ ticked: z.boolean() });
+
+// --- The game pot: games players would like to play; a few are drawn at random into the lineup ---
+
+export const POT_ENTRY_STATES = ['waiting', 'approved', 'rejected', 'drawn'] as const;
+export type PotEntryState = (typeof POT_ENTRY_STATES)[number];
+
+export interface GamePotEntry {
+  id: number;
+  name: string;
+  link: string | null;
+  /** How a match works, in the player's words. */
+  how: string | null;
+  /** null on the wall while details are hidden. */
+  playerId: string | null;
+  addedBy: string;
+  state: PotEntryState;
+  /** Why an admin rejected it. */
+  note: string | null;
+  /** 1 for the first game drawn, 2 for the second, and so on. */
+  drawOrder: number | null;
+  /** The lineup game it became when drawn. */
+  tournamentGameId: number | null;
+}
+
+export interface GamePotInfo {
+  /** False when pot_games_per_player is 0. */
+  enabled: boolean;
+  open: boolean;
+  needsApproval: boolean;
+  perPlayer: number;
+  drawCount: number;
+  /** Why the admin can't draw right now, or null when they can. */
+  drawBlocked: string | null;
+  /** Newest last. Rejected games are only listed for admins and the player who added them. */
+  entries: GamePotEntry[];
+}
+
+const potLink = z.string().trim().max(200, 'Keep the link under 200 characters')
+  .refine(v => v === '' || /^https?:\/\/\S+$/i.test(v), 'A link starts with http:// or https://');
+
+export const potEntrySchema = z.strictObject({
+  name: z.string().trim().min(1, 'Name the game').max(40, 'Keep the game name under 40 characters'),
+  link: potLink.optional(),
+  how: z.string().trim().max(160, 'Keep it under 160 characters').optional(),
+});
+
+export const potReviewSchema = z.strictObject({
+  action: z.enum(['approve', 'reject']),
+  note: z.string().trim().max(120).optional(),
+});
+
+export const potStateSchema = z.strictObject({ open: z.boolean() });

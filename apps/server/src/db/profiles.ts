@@ -47,11 +47,13 @@ export interface RuntimeState {
   discord_selected: string[];
   /** LANs whose final recap the host has published. */
   recap_published: string[];
+  /** LANs whose game pot is closed for new games. */
+  game_pot_closed: string[];
 }
 
 const RUNTIME_DEFAULTS: RuntimeState = {
   wall_blanked: false, wall_paused: false, wall_message: null, steam_paused: false,
-  submissions_disabled: false, hide_public: false, radio_requests_closed: false, discord_selected: [], recap_published: [],
+  submissions_disabled: false, hide_public: false, radio_requests_closed: false, discord_selected: [], recap_published: [], game_pot_closed: [],
 };
 
 export function getRuntimeState(db: Db): RuntimeState {

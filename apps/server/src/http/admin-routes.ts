@@ -3,7 +3,7 @@ import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { isSeq } from 'yaml';
 import {
   activityActionSchema, closePollSchema, discordSettingsSchema, eventSettingsSchema, newPlayerSchema, newTournamentGameSchema,
-  newTournamentSchema, playerFieldsSchema, radioControlSchema, safetySchema, setupSecretSchema, steamPauseSchema,
+  newTournamentSchema, playerFieldsSchema, potReviewSchema, potStateSchema, radioControlSchema, safetySchema, setupSecretSchema, steamPauseSchema,
   tournamentGameChangeSchema, tournamentRoundSchema, tournamentStateSchema, wallMessageSchema, wallSettingsSchema,
 } from '@lan-os/shared';
 import { z } from 'zod';
@@ -186,6 +186,9 @@ export function adminRoutes(app: FastifyInstance, c: AppContext, h: Helpers): vo
     return h.attempt(reply, () => c.hub.tournament.create(input.name));
   }));
 
+  app.post('/api/admin/tournament/planned', admin(async (_request, reply) =>
+    h.attempt(reply, () => c.hub.tournament.createPlanned())));
+
   app.post('/api/admin/tournament/state', admin(async (request, reply) => {
     const input = h.body(tournamentStateSchema, request, reply);
     if (!input) return;
@@ -226,6 +229,23 @@ export function adminRoutes(app: FastifyInstance, c: AppContext, h: Helpers): vo
     const params = request.params as { player: string; square: string };
     return h.attempt(reply, () => c.hub.tournament.untick(Number(id(request)), params.player, Number(params.square)));
   }));
+
+  // --- Game pot ---
+
+  app.post('/api/admin/pot/state', admin(async (request, reply) => {
+    const input = h.body(potStateSchema, request, reply);
+    if (!input) return;
+    return h.attempt(reply, () => c.hub.pot.setOpen(input.open));
+  }));
+
+  app.post('/api/admin/pot/:id/review', admin(async (request, reply) => {
+    const input = h.body(potReviewSchema, request, reply);
+    if (!input) return;
+    return h.attempt(reply, () => c.hub.pot.review(Number(id(request)), input.action, input.note));
+  }));
+
+  app.post('/api/admin/pot/draw', admin(async (_request, reply) =>
+    h.attempt(reply, () => ({ drawn: c.hub.pot.draw() }))));
 
   // --- History, backups, Discord ---
 

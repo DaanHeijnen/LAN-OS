@@ -3,7 +3,7 @@
 import { z } from 'zod';
 import { WALL_PANELS } from './config/schemas.ts';
 import type { Game, PresenceStatus, SteamLink } from './presence.ts';
-import type { TournamentInfo } from './tournament.ts';
+import type { GamePotInfo, TournamentInfo } from './tournament.ts';
 
 export const SCREENS = ['wall', 'app', 'admin'] as const;
 export type Screen = (typeof SCREENS)[number];
@@ -83,6 +83,8 @@ export interface CrashInfo { file: string; at: string; summary: string }
 
 export interface AdminInfo {
   players: AdminPlayer[];
+  /** The planned lineup from tournament.yaml, for the "Set up" button; null when there is none. */
+  plannedLineup: { name: string; games: string[] } | null;
   crashes: CrashInfo[];
   configProblems: string[];
   steamPaused: boolean;
@@ -193,6 +195,8 @@ export interface LiveSnapshot {
   gameFinder: GameFinderInfo;
   /** The tournament being set up, running or showing its podium; null when there is none. */
   tournament: TournamentInfo | null;
+  /** Games players would like to play; a few are drawn into the tournament lineup. */
+  gamePot: GamePotInfo;
   me?: MeInfo;
   admin?: AdminInfo;
 }
