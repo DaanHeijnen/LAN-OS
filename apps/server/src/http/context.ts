@@ -26,6 +26,8 @@ export interface AppContext {
   demo: boolean;
   port: number;
   webDistDir: string;
+  /** Restart or stop the server (Settings on the admin page). */
+  power: { restart: () => void; stop: () => void };
 }
 
 const LOOPBACK = new Set(['127.0.0.1', '::1', '::ffff:127.0.0.1']);

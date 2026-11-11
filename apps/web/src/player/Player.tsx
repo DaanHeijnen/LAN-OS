@@ -9,7 +9,7 @@ import { api, useLive, useNow } from '../live.ts';
 import { groupRoster } from '../roster.ts';
 import { Avatar, Modal, StatusDot, Switch, useAction, useToast } from '../ui/common.tsx';
 import { Icon, type IconName } from '../ui/Icon.tsx';
-import { AllSystems, ModeSwitch, Shell, TopAvatar } from '../ui/Shell.tsx';
+import { AllSystems, ModeSwitch, TopShell } from '../ui/Shell.tsx';
 import { ActivitiesPanel, ActivityModal, HistoryPanel, PollModal, PollsPanel, RadioPanel, SongModal, type Panel } from './panels.tsx';
 import { useSignedIn } from './SignIn.tsx';
 import { GamePotPanel } from './pot.tsx';
@@ -96,7 +96,6 @@ export default function Player() {
   if (!signedIn || !snapshot?.me) return null;
   const me = snapshot.me;
   const open = (m: 'song' | 'poll' | 'activity') => setModal(m);
-  const openPolls = snapshot.polls.filter(p => !p.closedAt && p.myVote === null).length;
   const panelProps = (panel: Panel) => ({
     snapshot, me, now, open, collapsed: layout.collapsed.includes(panel),
     onToggle: () => setLayout({ ...layout, collapsed: toggle(layout.collapsed, panel) }),
@@ -104,22 +103,9 @@ export default function Player() {
 
   return (
     <>
-      <Shell
-        snapshot={snapshot} now={now} sectionLabel="YOUR SPACE" breadcrumb="PLAYER DASHBOARD"
-        nav={[
-          { href: '#overview', icon: 'layout-dashboard', label: 'Overview' },
-          ...(snapshot.tournament && snapshot.tournament.state !== 'setup' ? [{ href: '#tournament', icon: 'trophy' as IconName, label: 'Tournament' }] : []),
-          ...(snapshot.gamePot.enabled ? [{ href: '#game-pot', icon: 'gamepad-2' as IconName, label: 'Game pot',
-            ...(snapshot.gamePot.open ? { count: snapshot.gamePot.entries.filter(e => e.state !== 'rejected').length } : {}) }] : []),
-          { href: '#radio', icon: 'music-2', label: 'LAN Radio', count: snapshot.radio.queue.length },
-          { href: '#polls', icon: 'chart-no-axes-column', label: 'Polls & activities', ...(openPolls ? { count: openPolls } : {}) },
-          { href: '#game-finder', icon: 'gamepad-2', label: 'Games & friends' },
-          // LAN Wrapped is a surprise: players see it once an admin publishes it; admins can preview it.
-          ...(snapshot.recapPublished || me.isAdmin ? [{ href: '/recap', icon: 'history' as IconName, label: snapshot.recapPublished ? 'LAN Wrapped' : 'LAN Wrapped (preview)' }] : []),
-        ]}
-        health={<><StatusDot level={snapshot.health.steam.level} />{snapshot.health.steam.level === 'ok' ? 'Steam connected' : snapshot.health.steam.label}
-          <span className="muted">· {snapshot.health.steam.level === 'ok' ? 'live sync' : 'see admin'}</span></>}
-        account={<button type="button" className="account-switch" onClick={() => setModal('status')}>
+      <TopShell
+        snapshot={snapshot} now={now}
+        account={<button type="button" className="account-switch top-account" onClick={() => setModal('status')} title="Your profile & status">
           <Avatar nickname={me.nickname} tone={me.tone} url={snapshot.players.find(p => p.id === me.id)?.avatarUrl} />
           <span><b>{me.nickname}</b><small>Your profile &amp; status</small></span><Icon name="chevrons-up-down" />
         </button>}
@@ -129,7 +115,6 @@ export default function Player() {
           <button type="button" className="icon-btn" aria-label="Customize dashboard" title="Customize panels" onClick={() => setModal('customize')}><Icon name="sliders-horizontal" /></button>
           <button type="button" className="icon-btn" aria-label="Toggle mini dashboard" title="Toggle mini dashboard"
             onClick={() => { setLayout({ ...layout, compact: !layout.compact }); if (!layout.compact) toast('Compact second-screen view enabled.'); }}><Icon name="panels-top-left" /></button>
-          <TopAvatar nickname={me.nickname} tone={me.tone} />
         </>}
       >
         <main className="main-content player-main" id="overview">
@@ -141,16 +126,20 @@ export default function Player() {
             <button className="button action-button action-poll" onClick={() => open('poll')}><Icon name="chart-no-axes-column" /> Start a poll</button>
             <button className="button action-button action-activity" onClick={() => open('activity')}><Icon name="calendar-plus" /> Propose activity</button>
             <button className="button button-quiet" onClick={() => setModal('status')}><Icon name="scan-face" /> Your status <Icon name="chevron-down" /></button>
+            {/* LAN Wrapped is a surprise: players see it once an admin publishes it; admins can preview it. */}
+            {me.isAdmin && !snapshot.recapPublished && <a className="button button-quiet" href="/recap"><Icon name="history" /> LAN Wrapped (preview)</a>}
+            {snapshot.recapPublished && <a className="fair-note recap-ready" href="/recap"><Icon name="history" /> LAN Wrapped is ready. <b>See the weekend in numbers →</b></a>}
           </div>
-          {snapshot.recapPublished && <div className="fair-note recap-ready"><Icon name="history" /> LAN Wrapped is ready. <a className="text-button" href="/recap">See the weekend in numbers <Icon name="arrow-right" /></a></div>}
           <div className="player-layout">
-            <div className="player-primary">
+            <div className="player-primary player-col">
+              <Roster snapshot={snapshot} me={me} now={now} onEditStatus={() => setModal('status')} onDetails={id => setModal({ player: id })} />
+            </div>
+            <div className="player-primary player-col">
               <TournamentPanel snapshot={snapshot} me={me} now={now} />
               <GamePotPanel snapshot={snapshot} me={me} />
-              <Roster snapshot={snapshot} me={me} now={now} onEditStatus={() => setModal('status')} onDetails={id => setModal({ player: id })} />
               <GameFinder snapshot={snapshot} />
             </div>
-            <div className="player-secondary" id="player-panels">
+            <div className="player-secondary player-col" id="player-panels">
               {layout.order.filter(p => !layout.hidden.includes(p)).map(panel =>
                 panel === 'radio' ? <RadioPanel key={panel} {...panelProps(panel)} />
                   : panel === 'polls' ? <PollsPanel key={panel} {...panelProps(panel)} />
@@ -158,9 +147,9 @@ export default function Player() {
                       : <HistoryPanel key={panel} {...panelProps(panel)} />)}
             </div>
           </div>
-          <div className="footer-note">Made for the people in this room. LAN-only · No pop-ups outside this tab{snapshot.demo ? ' · Demo data' : ''}</div>
         </main>
-      </Shell>
+      </TopShell>
+
       <button className="button button-primary mini-exit" onClick={() => setLayout({ ...layout, compact: false })}><Icon name="panels-top-left" /> Expand dashboard</button>
 
       {modal === 'status' && <StatusModal snapshot={snapshot} me={me} sound={sound} onSound={on => { setSound(on); try { localStorage.setItem(SOUND_KEY, on ? 'on' : 'off'); } catch { /* private window */ } if (on) chime(); }} onClose={() => setModal(null)} />}

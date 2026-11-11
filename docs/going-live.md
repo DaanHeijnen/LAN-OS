@@ -6,9 +6,9 @@ Everything is set up inside LAN OS. You don't need to edit any files.
 
 1. Double-click **`Start LAN OS.bat`**. The first time it sets itself up (a few minutes, needs internet). If the PC has no Node.js 22, it downloads its own copy into the `runtime` folder; nothing gets installed on Windows.
 2. Windows may ask whether Node.js may use the network. Choose **Private networks** and click **Allow**. Without that, the other PCs can't reach LAN OS.
-3. Your browser opens the **setup page**. Keep the black window open while LAN OS runs.
+3. Your browser opens **Settings** on the admin page (`/admin/settings`). Keep the black window open while LAN OS runs.
 
-## 2. The setup page (on the host PC)
+## 2. Settings on the admin page (on the host PC)
 
 Work through the steps; each one turns green when it's done.
 
@@ -23,7 +23,7 @@ Work through the steps; each one turns green when it's done.
 
 ## 3. Players join
 
-Each friend opens the sign-in address shown on the setup page (for example `http://192.168.1.10:8080/app/sign-in`, or `http://lan-os.local:8080/app` on most PCs) and clicks **Sign in through Steam**.
+Each friend opens the sign-in address shown in Settings on the admin page (for example `http://192.168.1.10:8080/app/sign-in`, or `http://lan-os.local:8080/app` on most PCs) and clicks **Sign in through Steam**.
 
 - The first time, they pick their name from the list, or add themselves.
 - After that their browser stays signed in for the weekend.

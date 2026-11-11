@@ -1,6 +1,6 @@
 # LAN OS: notes for Claude Code
 
-A local web app for a LAN weekend with about 7 friends. It runs on one Windows host PC and serves the projector **wall** (`/wall`), the **player dashboard** (`/app`), the **admin** page (`/admin`), first-run **setup** (`/setup`) and **LAN Wrapped** (`/recap`).
+A local web app for a LAN weekend with about 7 friends. It runs on one Windows host PC and serves the projector **wall** (`/wall`), the **player dashboard** (`/app`), the **admin** page (`/admin`) with **Settings** (`/admin/settings`: setup, restart, shut down; `/setup` opens it too) and **LAN Wrapped** (`/recap`).
 
 The owner is not a developer and works in VS Code on Windows. Write for a beginner, and give PowerShell commands, not bash.
 
@@ -19,7 +19,7 @@ apps/server/        Fastify server. Node 22 runs the .ts files directly (no buil
   src/live/hub.ts   owns all services and builds each screen's snapshot
   src/demo/         pretend Steam and Spotify, demo seed
   test/             Vitest tests
-apps/web/           React + Vite: /wall, /app, /admin, /setup, /recap
+apps/web/           React + Vite: /wall, /app, /admin (+ /admin/settings), /recap
 packages/shared/    zod schemas, types and pure logic shared by server and web
 config/             the YAML files the owner edits (+ README.md)
 data/               database, backups, logs, crash reports, Spotify sign-in (git-ignored)

@@ -21,6 +21,10 @@ if not exist node_modules (
   call npm install
   if errorlevel 1 goto failed
 )
+rem Tells LAN OS that this window starts it again after Restart server on the admin page.
+set "LANOS_LAUNCHER=1"
+
+:prepare
 echo Preparing the screens...
 call npm run build --silent
 if errorlevel 1 goto failed
@@ -34,6 +38,8 @@ copy /y "%NODE_EXE%" runtime\locallan.exe >nul 2>nul && set "SERVER_EXE=runtime\
 :run
 "%SERVER_EXE%" apps\server\src\main.ts %LANOS_MODE%
 if %errorlevel%==0 goto end
+rem 3 = Restart server on the admin page: prepare and start again straight away.
+if %errorlevel%==3 goto prepare
 if %errorlevel%==2 (
   echo.
   echo Fix the settings above, save the file, then press any key to try again.

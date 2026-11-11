@@ -18,6 +18,10 @@ import { SpotifyTokens } from './radio/spotify.ts';
 
 /** Exit code for "fix your config first", so Start LAN OS.bat waits instead of restarting. */
 const EXIT_CONFIG_PROBLEM = 2;
+/** Exit code for "start me again" (Restart server on the admin page); Start LAN OS.bat starts LAN OS straight away. */
+const EXIT_RESTART = 3;
+/** Start LAN OS.bat sets this, so the admin page only offers Restart when something will start the server again. */
+const underLauncher = process.env.LANOS_LAUNCHER === '1';
 
 const demo = process.argv.includes('--demo');
 const crashLog = new CrashLog(DATA_DIR);
@@ -73,7 +77,7 @@ async function main() {
   const baseUrl = () => `http://${address ?? 'localhost'}:${port}`;
 
   if (demo) seedDemo(db, store, accounts);
-  const hub = new LiveHub({ store, db, accounts, crashLog, secrets, spotifyTokens, dataDir: DATA_DIR, demo, baseUrl, port });
+  const hub = new LiveHub({ store, db, accounts, crashLog, secrets, spotifyTokens, dataDir: DATA_DIR, demo, baseUrl, port, canRestart: underLauncher });
 
   store.on('change', name => {
     log.info(`config/${name}.yaml changed; applied.`);
@@ -85,9 +89,12 @@ async function main() {
   });
   store.watch();
 
+  // Filled in below, once everything that has to be closed exists.
+  const power = { restart: () => {}, stop: () => {} };
   const app = await buildApp({
     store, db, accounts, hub, crashLog, secrets, spotifyTokens, demo, port,
     webDistDir: path.join(ROOT_DIR, 'apps', 'web', 'dist'),
+    power,
   });
   try {
     await app.listen({ port, host: '0.0.0.0' });
@@ -104,17 +111,28 @@ async function main() {
   const pruned = crashLog.prune(durationToSeconds(server.log_retention));
   if (pruned) log.info(`Removed ${pruned} old crash report${pruned > 1 ? 's' : ''}.`);
 
-  const shutdown = () => {
+  let stopping = false;
+  const shutdown = (code: number) => {
+    if (stopping) return;
+    stopping = true;
     hub.stop();
     store.close();
     stopMdns();
     void app.close().then(() => {
       db.close();
-      process.exit(0);
+      process.exit(code);
     });
   };
-  process.on('SIGINT', shutdown);
-  process.on('SIGTERM', shutdown);
+  process.on('SIGINT', () => shutdown(0));
+  process.on('SIGTERM', () => shutdown(0));
+  power.restart = () => {
+    console.log('\n  Restarting LAN OS (asked from the admin page)...\n');
+    shutdown(EXIT_RESTART);
+  };
+  power.stop = () => {
+    console.log('\n  LAN OS was shut down from the admin page.\n');
+    shutdown(0);
+  };
 
   const named = server.announce_hostname ? `http://${server.hostname}:${port}` : null;
   const firstRun = !demo && secrets.get('ADMIN_PASSWORD') === null;
@@ -131,7 +149,7 @@ async function main() {
     '  Keep this window open. Close it (or press Ctrl+C) to stop LAN OS.',
     '',
   ].join('\n'));
-  if (server.open_browser && !process.argv.includes('--no-browser')) openBrowser(`http://localhost:${port}/${firstRun ? 'setup' : 'admin'}`);
+  if (server.open_browser && !process.argv.includes('--no-browser')) openBrowser(`http://localhost:${port}/${firstRun ? 'admin/settings' : 'admin'}`);
 }
 
 void main();

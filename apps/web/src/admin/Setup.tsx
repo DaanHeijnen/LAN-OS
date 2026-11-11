@@ -1,9 +1,8 @@
-// First-run setup (/setup), on the host PC: admin password, the LAN, players, Steam, Spotify
+// Setup steps (Settings on the admin page; /setup opens there too), on the host PC: admin password, the LAN, players, Steam, Spotify
 // and optional extras. Everything is saved for you; nobody has to edit files.
 import { useEffect, useState, type ReactNode } from 'react';
 import type { AdminInfo, LiveSnapshot } from '@lan-os/shared';
-import { api, useLive } from '../live.ts';
-import { AdminSignIn, useSignedIn } from '../player/SignIn.tsx';
+import { api } from '../live.ts';
 import { BrandMark, useAction, useToast } from '../ui/common.tsx';
 import { Icon } from '../ui/Icon.tsx';
 import '../styles/app.css';
@@ -54,20 +53,8 @@ function SecretForm({ name, label, placeholder, help, set }: { name: string; lab
   );
 }
 
-export default function Setup() {
-  const auth = useSignedIn('admin');
-  const { snapshot } = useLive('admin');
-  useEffect(() => {
-    document.body.className = 'app-shell admin-page';
-    document.title = 'LAN OS · Setup';
-  }, []);
-  if (!auth) return null;
-  if (!auth.isAdmin) return <AdminSignIn passwordSet={auth.adminPasswordSet} />;
-  if (!snapshot?.admin) return null;
-  return <SetupSteps snapshot={snapshot} admin={snapshot.admin} hostPc={auth.hostPc} />;
-}
-
-function SetupSteps({ snapshot, admin, hostPc }: { snapshot: LiveSnapshot; admin: AdminInfo; hostPc: boolean }) {
+/** The setup steps. Also shown inside Settings on the admin page (embedded: no page header, no "open the screens" card). */
+export function SetupSteps({ snapshot, admin, hostPc, embedded = false }: { snapshot: LiveSnapshot; admin: AdminInfo; hostPc: boolean; embedded?: boolean }) {
   const run = useAction();
   const toast = useToast();
   const s = admin.setup;
@@ -88,16 +75,18 @@ function SetupSteps({ snapshot, admin, hostPc }: { snapshot: LiveSnapshot; admin
   const copy = (text: string) => navigator.clipboard?.writeText(text).then(() => toast('Copied.'), () => toast(text));
 
   return (
-    <div className="setup-page">
-      <header className="setup-head">
-        <a className="brand" href="/admin"><BrandMark /><span>LAN <strong>OS</strong></span></a>
-        <div>
-          <p className="eyebrow"><span className="eyebrow-dot" /> SETUP</p>
-          <h1>Let's get the room ready<span className="soft-period">.</span></h1>
-          <p className="page-subtitle">A few steps, once. Everything is saved for you. {snapshot.demo && 'You are in demo mode: music and players are pretend.'}</p>
-          {!hostPc && <p className="config-problem">You are not on the host PC. Connecting Spotify (step 5) only works on the host PC itself.</p>}
-        </div>
-      </header>
+    <div className={embedded ? 'setup-embedded' : 'setup-page'}>
+      {embedded
+        ? !hostPc && <p className="config-problem">You are not on the host PC. Connecting Spotify (step 5) only works on the host PC itself.</p>
+        : <header className="setup-head">
+          <a className="brand" href="/admin"><BrandMark /><span>LAN <strong>OS</strong></span></a>
+          <div>
+            <p className="eyebrow"><span className="eyebrow-dot" /> SETUP</p>
+            <h1>Let's get the room ready<span className="soft-period">.</span></h1>
+            <p className="page-subtitle">A few steps, once. Everything is saved for you. {snapshot.demo && 'You are in demo mode: music and players are pretend.'}</p>
+            {!hostPc && <p className="config-problem">You are not on the host PC. Connecting Spotify (step 5) only works on the host PC itself.</p>}
+          </div>
+        </header>}
 
       <Step id="password" n={1} title="Choose an admin password" done={s.adminPassword}>
         <p className="muted">On this PC the admin page always opens. Other admins use this password, or just sign in with Steam if you make them admin in step 3.</p>
@@ -179,7 +168,7 @@ function SetupSteps({ snapshot, admin, hostPc }: { snapshot: LiveSnapshot; admin
         <SecretForm name="DISCORD_BOT_TOKEN" label="Discord bot token" placeholder="Bot token" set={s.discordToken} />
       </Step>
 
-      <section className="card setup-step">
+      {!embedded && <section className="card setup-step">
         <div className="section-header"><div><div className="section-overline">ALL SET</div><h2>Open the screens</h2></div></div>
         <div className="setup-links">
           <a className="button button-primary" href="/wall" target="_blank" rel="noreferrer"><Icon name="monitor" /> Projector wall</a>
@@ -187,7 +176,7 @@ function SetupSteps({ snapshot, admin, hostPc }: { snapshot: LiveSnapshot; admin
           <a className="button button-soft" href="/app"><Icon name="users-round" /> Player dashboard</a>
         </div>
         <p className="muted text-sm">On the projector PC, open <b>{s.hostUrl}/wall</b> and press F11 for full screen.</p>
-      </section>
+      </section>}
     </div>
   );
 }

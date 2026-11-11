@@ -25,6 +25,20 @@ export function adminRoutes(app: FastifyInstance, c: AppContext, h: Helpers): vo
       return handler(request, reply);
     };
 
+  // --- Server power: Settings on the admin page ---
+
+  /** Answer first, then stop a moment later, so the admin page gets its reply. */
+  const POWER_DELAY_MS = 300;
+  app.post('/api/admin/server/restart', admin(async (_request, reply) => {
+    if (!c.hub.adminCanRestart()) return reply.code(400).send({ error: 'Restart only works when LAN OS was started with Start LAN OS.bat.' });
+    setTimeout(() => c.power.restart(), POWER_DELAY_MS);
+    return reply.send({ ok: true });
+  }));
+  app.post('/api/admin/server/stop', admin(async (_request, reply) => {
+    setTimeout(() => c.power.stop(), POWER_DELAY_MS);
+    return reply.send({ ok: true });
+  }));
+
   // --- Setup: keys and passwords, written to .env ---
 
   app.post('/api/setup/secret', admin(async (request, reply) => {

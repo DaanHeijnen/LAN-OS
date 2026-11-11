@@ -56,6 +56,8 @@ export interface HubOptions {
   demo: boolean;
   baseUrl: () => string;
   port: number;
+  /** True when Start LAN OS.bat runs the server, so it can start it again after a restart. */
+  canRestart?: boolean;
   now?: () => Date;
 }
 
@@ -293,6 +295,11 @@ export class LiveHub {
       this.schedulePoll(0);
     }
     this.push();
+  }
+
+  /** Whether Restart server can work: something (Start LAN OS.bat) starts LAN OS again after it stops. */
+  adminCanRestart(): boolean {
+    return this.o.canRestart ?? false;
   }
 
   /** Called when a key was added on the admin page. */
@@ -539,6 +546,7 @@ export class LiveHub {
         steamPaused: runtime.steam_paused,
         steamPollInterval: integrations.steam_poll_interval,
         uptimeSeconds: Math.floor((now.getTime() - this.startedAt.getTime()) / 1000),
+        canRestart: this.o.canRestart ?? false,
         setup: {
           adminPassword: this.o.secrets.get('ADMIN_PASSWORD') !== null,
           steamApiKey: this.o.secrets.get('STEAM_API_KEY') !== null,

@@ -333,3 +333,25 @@ html:has(body.admin-page){scroll-behavior:smooth}
 .admin-section-head p{margin:2px 0 0;font-size:12px;color:var(--text-secondary)}
 .admin-section-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(440px,1fr));gap:21px;align-items:start}
 .admin-section .metrics{margin-bottom:0}
+/* Admin Settings: the server card and the setup steps inside the admin page. */
+.setup-embedded{display:flex;flex-direction:column;gap:20px;max-width:980px}
+.server-card .server-note{margin:0;padding:0 21px 21px;font-size:12px;color:var(--text-secondary);line-height:1.5}
+/* Player dashboard: no menu, just a top bar. */
+.top-shell .app-topbar{padding:0 28px;gap:20px}
+.topbar-identity{display:flex;align-items:center;gap:18px;min-width:0}
+.topbar-identity .brand{padding:0}
+.topbar-identity .side-event{margin:0;padding:7px 12px}
+.account-switch.top-account{width:auto;padding:0 2px;gap:9px}
+.quick-actions .recap-ready{margin:0;text-decoration:none}
+/* On a big screen (1920×1080 and similar) everything fits in the window; each column scrolls on its own if it gets long. */
+@media (min-width:1280px) and (min-height:720px){
+  body.player-page:not(.mini){overflow:hidden}
+  body.player-page:not(.mini) .top-shell{height:100vh}
+  body.player-page:not(.mini) .top-shell .app-body{display:flex;flex-direction:column;height:100vh}
+  body.player-page:not(.mini) .player-main{flex:1;min-height:0;width:100%;max-width:none;display:flex;flex-direction:column;padding:20px 28px}
+  body.player-page:not(.mini) .player-main .page-head{margin-bottom:14px}
+  body.player-page:not(.mini) .player-main .quick-actions{margin-bottom:16px}
+  body.player-page:not(.mini) .player-layout{flex:1;min-height:0;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr) minmax(0,1fr);align-items:stretch}
+  body.player-page:not(.mini) .player-col{min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:20px;padding-right:4px;scrollbar-width:thin}
+  body.player-page:not(.mini) .player-col>*{flex-shrink:0}
+}

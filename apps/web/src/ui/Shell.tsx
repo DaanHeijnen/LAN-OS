@@ -1,4 +1,4 @@
-// The sidebar + top bar frame shared by the player dashboard and the admin page.
+// The frames: sidebar + top bar for the admin page, top bar only for the player dashboard.
 import type { ReactNode } from 'react';
 import { lanClock, type LiveSnapshot } from '@lan-os/shared';
 import { Avatar, BrandMark, StatusDot } from './common.tsx';
@@ -34,6 +34,29 @@ export function Shell({ snapshot, now, sectionLabel, nav, extraLabel, extraNav, 
         <header className="app-topbar">
           <div className="breadcrumb">{snapshot.event.name.toUpperCase()} <span>/</span> <b>{breadcrumb}</b></div>
           <div className="topbar-actions">{topbar}</div>
+        </header>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+/** The player dashboard's frame: one top bar and no menu, so everything fits on one screen. */
+export function TopShell({ snapshot, now, topbar, account, children }: {
+  snapshot: LiveSnapshot; now: Date; topbar: ReactNode; account: ReactNode; children: ReactNode;
+}) {
+  const clock = lanClock(snapshot.event, now);
+  const dayLine = clock.phase === 'live' ? `Day ${clock.day} of ${clock.totalDays} · Live`
+    : clock.phase === 'before' ? 'Starts soon' : 'Finished';
+  return (
+    <div className="shell top-shell">
+      <div className="app-body">
+        <header className="app-topbar">
+          <div className="topbar-identity">
+            <a className="brand" href="/app"><BrandMark /><span>LAN <strong>OS</strong></span></a>
+            <div className="side-event"><span className="side-event-dot" /><div><strong>{snapshot.event.name}</strong><small>{dayLine}</small></div></div>
+          </div>
+          <div className="topbar-actions">{topbar}{account}</div>
         </header>
         {children}
       </div>

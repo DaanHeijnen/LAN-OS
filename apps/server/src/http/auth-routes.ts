@@ -187,7 +187,7 @@ export function authRoutes(app: FastifyInstance, c: AppContext, h: Helpers): voi
     if (!fromHostPc(request)) return reply.code(403).type('text/plain').send(`Connect Spotify on the host PC itself: open ${local}/setup there.`);
     if (origin(request) !== local) return reply.redirect(`${local}/auth/spotify/start`);
     const clientId = c.secrets.get('SPOTIFY_CLIENT_ID');
-    if (!clientId) return reply.redirect('/setup?spotify=no-client-id#spotify');
+    if (!clientId) return reply.redirect('/admin/settings?spotify=no-client-id#spotify');
     const pkce = createPkce();
     spotifyPending.set(pkce.state, { verifier: pkce.verifier, expires: Date.now() + 10 * 60_000 });
     return reply.redirect(spotifyAuthorizeUrl(clientId, `${local}/auth/spotify/callback`, pkce.challenge, pkce.state));
@@ -198,15 +198,15 @@ export function authRoutes(app: FastifyInstance, c: AppContext, h: Helpers): voi
     const pending = state ? spotifyPending.get(state) : undefined;
     const clientId = c.secrets.get('SPOTIFY_CLIENT_ID');
     if (error || !code || !pending || pending.expires < Date.now() || !clientId) {
-      return reply.redirect(`/setup?spotify=${encodeURIComponent(error ?? 'failed')}#spotify`);
+      return reply.redirect(`/admin/settings?spotify=${encodeURIComponent(error ?? 'failed')}#spotify`);
     }
     spotifyPending.delete(state!);
     try {
       await c.spotifyTokens.exchangeCode(clientId, code, `http://127.0.0.1:${c.port}/auth/spotify/callback`, pending.verifier);
     } catch {
-      return reply.redirect('/setup?spotify=failed#spotify');
+      return reply.redirect('/admin/settings?spotify=failed#spotify');
     }
     c.hub.resetMusic();
-    return reply.redirect('/setup?spotify=connected#spotify');
+    return reply.redirect('/admin/settings?spotify=connected#spotify');
   });
 }

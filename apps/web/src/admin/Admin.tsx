@@ -13,6 +13,7 @@ import { Icon, type IconName } from '../ui/Icon.tsx';
 import { AllSystems, ModeSwitch, Shell, TopAvatar } from '../ui/Shell.tsx';
 import { mmss } from '../format.ts';
 import { GamePotCard } from './PotAdmin.tsx';
+import { SetupSteps } from './Setup.tsx';
 import { TournamentCard } from './TournamentAdmin.tsx';
 import '../styles/app.css';
 import '../styles/lan-os.css';
@@ -66,12 +67,14 @@ function useSectionInView(ids: string[]): string {
   return current;
 }
 
-export default function Admin() {
+export default function Admin({ path = location.pathname }: { path?: string }) {
   const auth = useSignedIn('admin');
+  // /admin/settings shows Settings (setup, restart, shut down) inside the same page.
+  const view = /^\/admin\/settings\/?$/.test(path) ? 'settings' : 'control';
   const { snapshot, connected, offsetMs } = useLive('admin');
   const now = useNow(offsetMs);
   const sections = SECTIONS.filter(s => s.id !== 'game-pot' || snapshot?.gamePot.enabled);
-  const inView = useSectionInView(sections.map(s => s.id));
+  const inView = useSectionInView(view === 'control' ? sections.map(s => s.id) : []);
   useEffect(() => {
     document.body.className = 'app-shell admin-page';
     document.title = 'LAN OS · Admin control room';
@@ -103,13 +106,13 @@ export default function Admin() {
     <Shell
       snapshot={snapshot} now={now} sectionLabel="CONTROL ROOM" breadcrumb="ADMIN CONSOLE"
       nav={sections.map(s => ({
-        href: `#section-${s.id}`, icon: s.icon, label: s.label, active: s.id === inView,
+        href: view === 'control' ? `#section-${s.id}` : `/admin#section-${s.id}`, icon: s.icon, label: s.label, active: view === 'control' && s.id === inView,
         ...(s.id === 'tournament' && snapshot.tournament?.state === 'live' ? { count: 1 } : {}),
         ...(s.id === 'game-pot' && waitingGames > 0 ? { count: waitingGames } : {}),
       }))}
       extraLabel="SHORTCUTS"
       extraNav={[
-        { href: '/setup', icon: 'sliders-horizontal', label: 'Setup', ...(setupDone ? {} : { count: 1 }) },
+        { href: '/admin/settings', icon: 'server', label: 'Settings', active: view === 'settings', ...(setupDone ? {} : { count: 1 }) },
         { href: '/wall', icon: 'monitor', label: 'Open projector', trailing: true, target: '_blank' },
         { href: '/recap', icon: 'history', label: 'LAN Wrapped (preview)' },
       ]}
@@ -126,7 +129,7 @@ export default function Admin() {
         {me && <TopAvatar nickname={me.nickname} tone={me.tone} />}
       </>}
     >
-      <main className="main-content admin-main">
+      {view === 'settings' ? <SettingsView snapshot={snapshot} admin={admin} hostPc={auth.hostPc} /> : <main className="main-content admin-main">
         <div className="page-head admin-page-head">
           <div>
             <p className="eyebrow"><span className="eyebrow-dot" /> LAN MANAGEMENT · {snapshot.demo ? 'DEMO MODE' : 'LIVE SESSION'}</p>
@@ -135,7 +138,7 @@ export default function Admin() {
           </div>
           <a className="button button-primary" href="/wall" target="_blank" rel="noreferrer"><Icon name="external-link" /> Open projector</a>
         </div>
-        {!setupDone && <a className="fair-note setup-nudge" href="/setup"><Icon name="info" /> Setup isn't finished yet{!admin.setup.spotifyConnected ? ': LAN Radio needs your Spotify account' : ''}. <b>Open setup →</b></a>}
+        {!setupDone && <a className="fair-note setup-nudge" href="/admin/settings"><Icon name="info" /> Setup isn't finished yet{!admin.setup.spotifyConnected ? ': LAN Radio needs your Spotify account' : ''}. <b>Open setup →</b></a>}
         {sections.map(s => (
           <section className="admin-section" id={`section-${s.id}`} key={s.id} aria-labelledby={`section-${s.id}-title`}>
             <header className="admin-section-head">
@@ -146,8 +149,80 @@ export default function Admin() {
           </section>
         ))}
         <div className="footer-note">Settings are saved in the config/ folder · Keys in .env · {snapshot.demo ? 'Demo mode: pretend players and music' : 'LAN-only'}</div>
-      </main>
+      </main>}
     </Shell>
+  );
+}
+
+/** Settings (/admin/settings): the server itself and the setup steps, inside the admin page. */
+function SettingsView({ snapshot, admin, hostPc }: { snapshot: LiveSnapshot; admin: AdminInfo; hostPc: boolean }) {
+  return (
+    <main className="main-content admin-main">
+      <div className="page-head admin-page-head">
+        <div>
+          <p className="eyebrow"><span className="eyebrow-dot" /> LAN MANAGEMENT · SETTINGS</p>
+          <h1>Settings<span className="soft-period">.</span></h1>
+          <p className="page-subtitle">The server, keys and setup. Everything is saved for you.</p>
+        </div>
+        <a className="button button-soft" href="/admin"><Icon name="arrow-left" /> Back to control room</a>
+      </div>
+      <section className="admin-section">
+        <header className="admin-section-head">
+          <span className="admin-section-icon"><Icon name="server" /></span>
+          <div><h2>Server</h2><p>Restart or shut down LAN OS on the host PC.</p></div>
+        </header>
+        <div className="admin-section-cards"><ServerCard admin={admin} demo={snapshot.demo} /></div>
+      </section>
+      <section className="admin-section">
+        <header className="admin-section-head">
+          <span className="admin-section-icon"><Icon name="sliders-horizontal" /></span>
+          <div><h2>Setup</h2><p>Admin password, the LAN, players, Steam, Spotify and extras.</p></div>
+        </header>
+        <SetupSteps snapshot={snapshot} admin={admin} hostPc={hostPc} embedded />
+      </section>
+    </main>
+  );
+}
+
+function ServerCard({ admin, demo }: { admin: AdminInfo; demo: boolean }) {
+  const run = useAction();
+  const toast = useToast();
+  const [confirm, setConfirm] = useState<'restart' | 'stop' | null>(null);
+  const [stopped, setStopped] = useState(false);
+  const apply = (kind: 'restart' | 'stop') => void run(() => api(`/api/admin/server/${kind}`)).then(() => {
+    setConfirm(null);
+    if (kind === 'restart') toast('Restarting LAN OS. This page reconnects by itself in a few seconds.');
+    else setStopped(true);
+  });
+  return (
+    <section className="card server-card">
+      <div className="section-header">
+        <div><div className="section-overline">LOCAL SERVER</div><h2>{stopped ? 'Shut down' : `Running for ${formatDuration(admin.uptimeSeconds)}`}</h2></div>
+        <span className={`tiny-pill ${stopped ? '' : 'accent-pill'}`}>{stopped ? 'OFF' : demo ? 'DEMO' : 'ON'}</span>
+      </div>
+      {stopped
+        ? <p className="server-note">LAN OS is off. Start it again on the host PC by double-clicking <b>Start LAN OS.bat</b>.</p>
+        : <div className="projector-controls">
+          <div className="projector-control">
+            <span className="control-name"><Icon name="refresh-cw" />Restart server
+              <small>{admin.canRestart ? 'Stops LAN OS and starts it again, with the latest code and settings. Screens reconnect by themselves.'
+                : 'Only works when LAN OS was started with Start LAN OS.bat. Otherwise stop it and start it again yourself.'}</small></span>
+            <button className="button button-soft button-small" disabled={!admin.canRestart} onClick={() => setConfirm('restart')}><Icon name="refresh-cw" /> Restart</button>
+          </div>
+          <div className="projector-control">
+            <span className="control-name"><Icon name="log-out" />Shut down server
+              <small>Stops LAN OS completely. The wall and dashboards go offline until you start it again.</small></span>
+            <button className="button button-warning button-small" onClick={() => setConfirm('stop')}><Icon name="log-out" /> Shut down</button>
+          </div>
+        </div>}
+      {confirm && <Modal title={confirm === 'restart' ? 'Restart LAN OS?' : 'Shut down LAN OS?'} label="LOCAL SERVER" onClose={() => setConfirm(null)}
+        footer={<><button className="button button-quiet" onClick={() => setConfirm(null)}>Cancel</button>
+          <button className={`button ${confirm === 'stop' ? 'button-warning' : 'button-primary'}`} onClick={() => apply(confirm)}>{confirm === 'restart' ? 'Restart' : 'Shut down'}</button></>}>
+        <p className="mini-confirm">{confirm === 'restart'
+          ? 'Everyone sees "Reconnecting…" for a few seconds. Nothing is lost: history, the queue and settings are kept.'
+          : 'The wall and every dashboard go offline. Nothing is lost. To start again, double-click Start LAN OS.bat on the host PC.'}</p>
+      </Modal>}
+    </section>
   );
 }
 
@@ -461,7 +536,7 @@ function HealthCard({ snapshot, admin }: { snapshot: LiveSnapshot; admin: AdminI
     <section className="card systems-card" id="systems">
       <div className="section-header">
         <div><div className="section-overline">HEALTH MONITOR</div><h2>{allOk ? 'Everything connected' : 'Something needs a look'}</h2></div>
-        <a className="icon-btn compact" title="Setup" href="/setup"><Icon name="sliders-horizontal" /></a>
+        <a className="icon-btn compact" title="Setup" href="/admin/settings"><Icon name="sliders-horizontal" /></a>
       </div>
       <div className="service-list">
         {services.map(([icon, name, s]) => (
@@ -488,7 +563,7 @@ function MusicCard({ snapshot, now }: { snapshot: LiveSnapshot; now: Date }) {
   return (
     <section className="card moderation-card">
       <div className="section-header"><div><div className="section-overline">LAN RADIO</div><h2>Music controls</h2></div><span className="tiny-pill">{radio.queue.length} QUEUED</span></div>
-      {radio.status !== 'ok' && <p className="config-problem">⚠ {radio.message} <a className="text-button" href="/setup">Setup</a></p>}
+      {radio.status !== 'ok' && <p className="config-problem">⚠ {radio.message} <a className="text-button" href="/admin/settings">Setup</a></p>}
       <div className="moderation-now">
         <AlbumArt className="album-mini" url={radio.now?.albumArt ?? null} label={radio.now?.artist ?? ''} />
         <div><strong>{radio.now?.title ?? 'Nothing playing'}</strong>
@@ -559,7 +634,7 @@ function DiscordCard({ admin }: { admin: AdminInfo }) {
       <div className="section-header"><div><div className="section-overline">DISCORD</div><h2>Highlights on the wall</h2></div>
         <span className="tiny-pill">{d.enabled && d.connected ? `${selected.length} PICKED` : 'OPTIONAL'}</span></div>
       <div className="card-body">
-      {!admin.setup.discordToken ? <p className="muted text-sm">Add a Discord bot token on the <a className="text-button" href="/setup#extras">setup page</a> to show picked messages on the wall. The bot only reads; it never posts.</p>
+      {!admin.setup.discordToken ? <p className="muted text-sm">Add a Discord bot token on the <a className="text-button" href="/admin/settings#extras">setup page</a> to show picked messages on the wall. The bot only reads; it never posts.</p>
         : !d.channelSet ? <form onSubmit={e => { e.preventDefault(); void run(() => api('/api/admin/discord', 'POST', { channelId: channel }), 'Channel saved.'); }}>
           <div className="modal-field"><label htmlFor="discord-channel">Channel ID</label>
             <input id="discord-channel" value={channel} onChange={e => setChannel(e.target.value.replace(/\D/g, ''))} placeholder="Right-click the channel → Copy Channel ID" /></div>

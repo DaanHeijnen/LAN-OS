@@ -103,10 +103,10 @@ Every game session, song, vote and activity is saved. LAN Wrapped turns it into 
 
 ## Setup and sign-in
 
-- **No files to edit.** On first start a setup page opens on the host PC. Choose an admin password, set the LAN's name and dates, list who's coming, and connect Spotify.
+- **No files to edit.** On first start Settings opens on the admin page of the host PC. Choose an admin password, set the LAN's name and dates, list who's coming, and connect Spotify.
 - **Players sign in with Steam.** They pick their name, or add themselves, and stay signed in all weekend.
 - **Steam works without an API key.** It reads public Steam profiles. An optional key adds Away status, joining lobbies and the Shared Game Finder.
-- **Spotify:** LAN Radio plays through the host's Spotify Premium account, connected with one button on the setup page.
+- **Spotify:** LAN Radio plays through the host's Spotify Premium account, connected with one button in Settings on the admin page.
 - **Optional:** a Discord bot for highlights.
 
 ## Built to run unattended for 72 hours

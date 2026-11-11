@@ -90,6 +90,8 @@ export interface AdminInfo {
   steamPaused: boolean;
   steamPollInterval: string;
   uptimeSeconds: number;
+  /** The server can restart itself (it was started with Start LAN OS.bat). */
+  canRestart: boolean;
   setup: SetupInfo;
   lastBackup: string | null;
   recentEvents: Array<{ id: number; type: string; player: string | null; at: string; summary: string }>;
