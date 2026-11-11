@@ -13,7 +13,7 @@ const Recap = lazy(() => import('./recap/Recap.tsx'));
 function Screen() {
   const path = location.pathname.replace(/\/+$/, '');
   if (path === '/wall') return <Wall />;
-  if (path === '/admin') return <Admin />;
+  if (path === '/admin' || path.startsWith('/admin/')) return <Admin />;
   if (path === '/setup') return <Setup />;
   if (path === '/recap' || path.startsWith('/recap/')) return <Recap />;
   if (path === '/app/sign-in') return <SignIn />;

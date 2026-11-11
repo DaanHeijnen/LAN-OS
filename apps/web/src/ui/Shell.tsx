@@ -4,7 +4,8 @@ import { lanClock, type LiveSnapshot } from '@lan-os/shared';
 import { Avatar, BrandMark, StatusDot } from './common.tsx';
 import { Icon, type IconName } from './Icon.tsx';
 
-export interface NavItem { href: string; icon: IconName; label: string; count?: number; trailing?: boolean; target?: string }
+/** active: highlight this item; when left out, the first in-page (#) link is highlighted. */
+export interface NavItem { href: string; icon: IconName; label: string; count?: number; trailing?: boolean; target?: string; active?: boolean }
 
 export function Shell({ snapshot, now, sectionLabel, nav, extraLabel, extraNav, health, account, breadcrumb, topbar, children }: {
   snapshot: LiveSnapshot; now: Date; sectionLabel: string; nav: NavItem[]; extraLabel?: string; extraNav?: NavItem[];
@@ -44,7 +45,7 @@ function Nav({ items }: { items: NavItem[] }) {
   return (
     <nav className="side-nav">
       {items.map((item, i) => (
-        <a key={item.href} href={item.href} className={i === 0 && item.href.startsWith('#') ? 'active' : undefined} target={item.target}>
+        <a key={item.href} href={item.href} className={(item.active ?? (i === 0 && item.href.startsWith('#'))) ? 'active' : undefined} target={item.target}>
           <Icon name={item.icon} />{item.label}
           {item.count !== undefined && <span className="side-count">{item.count}</span>}
           {item.trailing && <Icon name="arrow-up-right" className="nav-trailing" />}

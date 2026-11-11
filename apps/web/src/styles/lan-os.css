@@ -285,3 +285,5 @@ button.bingo-square:disabled{cursor:not-allowed}
 .wall-column .wall-poll-question{margin-bottom:12px}
 .wall-column .wall-poll-options{gap:8px}
 .wall-column .wall-activity{height:150px}
+/* Admin: every menu item is its own page; its cards stack in one column. */
+.admin-page-cards{display:flex;flex-direction:column;gap:21px;max-width:1000px}

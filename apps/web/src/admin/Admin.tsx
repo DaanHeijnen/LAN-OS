@@ -18,14 +18,60 @@ import '../styles/lan-os.css';
 
 const PANEL_LABEL: Record<(typeof WALL_PANELS)[number], string> = { music: 'Music', poll: 'Poll', activity: 'Activity' };
 
+/** Each menu item is its own page at /admin/<slug>. */
+const PAGES = [
+  { slug: '', icon: 'layout-dashboard', label: 'Overview', title: 'Control room', subtitle: "Everything running smoothly? You shouldn't need to touch much." },
+  { slug: 'projector', icon: 'projector', label: 'Projector', title: 'Projector', subtitle: 'What the big screen shows, and how bright it is.' },
+  { slug: 'announcements', icon: 'megaphone', label: 'Announcements', title: 'Announcements', subtitle: 'Put a message on the projector.' },
+  { slug: 'tournament', icon: 'trophy', label: 'Tournament', title: 'Tournament', subtitle: 'Set up and run the tournament.' },
+  { slug: 'people', icon: 'users-round', label: 'People & access', title: 'People & access', subtitle: 'The roster, and who can sign in.' },
+  { slug: 'polls', icon: 'chart-no-axes-column', label: 'Polls & activities', title: 'Polls & activities', subtitle: 'Votes and planned activities.' },
+  { slug: 'radio', icon: 'music-2', label: 'LAN Radio', title: 'LAN Radio', subtitle: 'Playback, the queue and requests.' },
+  { slug: 'history', icon: 'history', label: 'History & Wrapped', title: 'History & Wrapped', subtitle: 'What happened, and LAN Wrapped.' },
+  { slug: 'systems', icon: 'activity', label: 'Integrations & logs', title: 'Integrations & logs', subtitle: 'Steam, Spotify, Discord and crash reports.' },
+  { slug: 'safety', icon: 'shield-alert', label: 'Safety controls', title: 'Safety controls', subtitle: 'Quick switches for when something goes wrong.' },
+] as const satisfies ReadonlyArray<{ slug: string; icon: IconName; label: string; title: string; subtitle: string }>;
+type Page = (typeof PAGES)[number];
+
+const pageFromPath = (pathname: string): Page =>
+  PAGES.find(p => p.slug === pathname.replace(/^\/admin\/?/, '').replace(/\/+$/, '')) ?? PAGES[0];
+
+/** Follows /admin/... links without reloading the page; the browser's back button works too. */
+function useAdminPage(): Page {
+  const [page, setPage] = useState(() => pageFromPath(location.pathname));
+  useEffect(() => {
+    const onPop = () => setPage(pageFromPath(location.pathname));
+    const onClick = (e: MouseEvent) => {
+      const link = (e.target as Element | null)?.closest?.('a');
+      if (!link || link.target || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      const url = new URL(link.href);
+      if (url.origin !== location.origin || !/^\/admin(\/|$)/.test(url.pathname)) return;
+      e.preventDefault();
+      if (url.pathname !== location.pathname) history.pushState(null, '', url.pathname);
+      setPage(pageFromPath(url.pathname));
+      window.scrollTo(0, 0);
+    };
+    window.addEventListener('popstate', onPop);
+    document.addEventListener('click', onClick);
+    return () => {
+      window.removeEventListener('popstate', onPop);
+      document.removeEventListener('click', onClick);
+    };
+  }, []);
+  return page;
+}
+
 export default function Admin() {
   const auth = useSignedIn('admin');
   const { snapshot, connected, offsetMs } = useLive('admin');
   const now = useNow(offsetMs);
+  const page = useAdminPage();
   useEffect(() => {
     document.body.className = 'app-shell admin-page';
-    document.title = 'LAN OS · Admin control room';
   }, []);
+  useEffect(() => {
+    document.title = `LAN OS · Admin · ${page.label}`;
+  }, [page]);
 
   if (!auth) return null;
   if (!auth.isAdmin) return <AdminSignIn passwordSet={auth.adminPasswordSet} />;
@@ -37,17 +83,11 @@ export default function Admin() {
 
   return (
     <Shell
-      snapshot={snapshot} now={now} sectionLabel="CONTROL ROOM" breadcrumb="ADMIN CONSOLE"
-      nav={[
-        { href: '#admin-overview', icon: 'layout-dashboard', label: 'Overview' },
-        { href: '#projector', icon: 'projector', label: 'Projector' },
-        { href: '#announcements', icon: 'megaphone', label: 'Announcements' },
-        { href: '#tournament', icon: 'trophy', label: 'Tournament', ...(snapshot.tournament?.state === 'live' ? { count: 1 } : {}) },
-        { href: '#people', icon: 'users-round', label: 'People & access' },
-        { href: '#admin-polls', icon: 'chart-no-axes-column', label: 'Polls & activities' },
-        { href: '#systems', icon: 'activity', label: 'Integrations & logs' },
-        { href: '#emergency', icon: 'shield-alert', label: 'Safety controls' },
-      ]}
+      snapshot={snapshot} now={now} sectionLabel="CONTROL ROOM" breadcrumb={`ADMIN CONSOLE / ${page.label.toUpperCase()}`}
+      nav={PAGES.map(p => ({
+        href: p.slug ? `/admin/${p.slug}` : '/admin', icon: p.icon, label: p.label, active: p === page,
+        ...(p.slug === 'tournament' && snapshot.tournament?.state === 'live' ? { count: 1 } : {}),
+      }))}
       extraLabel="SHORTCUTS"
       extraNav={[
         { href: '/setup', icon: 'sliders-horizontal', label: 'Setup', ...(setupDone ? {} : { count: 1 }) },
@@ -68,36 +108,35 @@ export default function Admin() {
         {me && <TopAvatar nickname={me.nickname} tone={me.tone} />}
       </>}
     >
-      <main className="main-content admin-main" id="admin-overview">
+      <main className="main-content admin-main">
         <div className="page-head admin-page-head">
           <div>
             <p className="eyebrow"><span className="eyebrow-dot" /> LAN MANAGEMENT · {snapshot.demo ? 'DEMO MODE' : 'LIVE SESSION'}</p>
-            <h1>Control room<span className="soft-period">.</span></h1>
-            <p className="page-subtitle">Everything running smoothly? You shouldn't need to touch much.</p>
+            <h1>{page.title}<span className="soft-period">.</span></h1>
+            <p className="page-subtitle">{page.subtitle}</p>
           </div>
           <a className="button button-primary" href="/wall" target="_blank" rel="noreferrer"><Icon name="external-link" /> Open projector</a>
         </div>
         {!setupDone && <a className="fair-note setup-nudge" href="/setup"><Icon name="info" /> Setup isn't finished yet{!admin.setup.spotifyConnected ? ': LAN Radio needs your Spotify account' : ''}. <b>Open setup →</b></a>}
-        <Metrics snapshot={snapshot} admin={admin} />
-        <div className="admin-grid">
-          <div className="admin-left">
-            <ProjectorCard snapshot={snapshot} now={now} />
-            <TournamentCard snapshot={snapshot} now={now} />
-            <PeopleCard admin={admin} snapshot={snapshot} />
-            <PollsCard snapshot={snapshot} />
-            <ActivitiesCard snapshot={snapshot} now={now} />
-            <WrappedCard snapshot={snapshot} />
-            <HistoryCard admin={admin} timezone={snapshot.event.timezone} />
+        {page.slug === '' ? <>
+          <Metrics snapshot={snapshot} admin={admin} />
+          <div className="admin-grid">
+            <div className="admin-left"><MessageCard snapshot={snapshot} /></div>
+            <div className="admin-right"><HealthCard snapshot={snapshot} admin={admin} /></div>
           </div>
-          <div className="admin-right">
-            <MessageCard snapshot={snapshot} />
-            <HealthCard snapshot={snapshot} admin={admin} />
-            <MusicCard snapshot={snapshot} now={now} />
-            <SafetyCard snapshot={snapshot} />
-            <DiscordCard admin={admin} />
-            <CrashCard admin={admin} />
+        </> : (
+          <div className="admin-page-cards">
+            {page.slug === 'projector' && <ProjectorCard snapshot={snapshot} now={now} />}
+            {page.slug === 'announcements' && <MessageCard snapshot={snapshot} />}
+            {page.slug === 'tournament' && <TournamentCard snapshot={snapshot} now={now} />}
+            {page.slug === 'people' && <PeopleCard admin={admin} snapshot={snapshot} />}
+            {page.slug === 'polls' && <><PollsCard snapshot={snapshot} /><ActivitiesCard snapshot={snapshot} now={now} /></>}
+            {page.slug === 'radio' && <MusicCard snapshot={snapshot} now={now} />}
+            {page.slug === 'history' && <><WrappedCard snapshot={snapshot} /><HistoryCard admin={admin} timezone={snapshot.event.timezone} /></>}
+            {page.slug === 'systems' && <><HealthCard snapshot={snapshot} admin={admin} /><DiscordCard admin={admin} /><CrashCard admin={admin} /></>}
+            {page.slug === 'safety' && <SafetyCard snapshot={snapshot} />}
           </div>
-        </div>
+        )}
         <div className="footer-note">Settings are saved in the config/ folder · Keys in .env · {snapshot.demo ? 'Demo mode: pretend players and music' : 'LAN-only'}</div>
       </main>
     </Shell>
