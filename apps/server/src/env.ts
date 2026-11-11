@@ -3,7 +3,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-export const SECRET_NAMES = ['ADMIN_PASSWORD', 'STEAM_API_KEY', 'SPOTIFY_CLIENT_ID', 'DISCORD_BOT_TOKEN', 'AI_API_KEY'] as const;
+export const SECRET_NAMES = ['ADMIN_PASSWORD', 'STEAM_API_KEY', 'SPOTIFY_CLIENT_ID', 'DISCORD_BOT_TOKEN'] as const;
 export type SecretName = (typeof SECRET_NAMES)[number];
 
 /** Parses KEY=value lines; quotes around the value are optional. */

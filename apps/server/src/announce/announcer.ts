@@ -3,8 +3,6 @@
 // merges what happened meanwhile and shows only the most important one.
 import { durationToSeconds, type PlayerCard } from '@lan-os/shared';
 import type { ConfigStore } from '../config/store.ts';
-import { log } from '../logging.ts';
-import type { AiWriter } from './ai.ts';
 import { factLine, humourLine, nightLine, type Trigger } from './lines.ts';
 
 /** How long a candidate stays relevant before it is dropped. */
@@ -17,7 +15,6 @@ interface Candidate { key: string; trigger: Trigger; at: number }
 
 export interface AnnouncerOptions {
   store: ConfigStore;
-  ai: () => AiWriter | null;
   show: (text: string, kind: 'major' | 'minor', ms: number, trigger: string) => void;
   now?: () => number;
   random?: () => number;
@@ -31,7 +28,6 @@ export class Announcer {
   /** Keys already announced, so the same moment is never announced twice. */
   private used = new Set<string>();
   private lastShown = 0;
-  private busy = false;
 
   constructor(options: AnnouncerOptions) {
     this.o = options;
@@ -83,8 +79,7 @@ export class Announcer {
   }
 
   /** Called every minute: maybe announce the most important waiting moment. */
-  async tick(nightMode: boolean): Promise<void> {
-    if (this.busy) return;
+  tick(nightMode: boolean): void {
     const now = this.now();
     this.candidates = this.candidates.filter(c => now - c.at < CANDIDATE_TTL_MS);
     if (!this.candidates.length) return;
@@ -103,32 +98,21 @@ export class Announcer {
     for (const c of this.candidates) this.used.add(c.key);
     this.candidates = [];
     this.lastShown = now;
-    this.busy = true;
-    try {
-      const text = await this.word(best.trigger, nightMode);
-      const kind = best.trigger.kind === 'poll_closed' || best.trigger.kind === 'long_session' ? 'major' : 'minor';
-      this.o.show(text, kind, SHOW_MS[kind], best.trigger.kind);
-    } finally {
-      this.busy = false;
-    }
+    const kind = best.trigger.kind === 'poll_closed' || best.trigger.kind === 'long_session' ? 'major' : 'minor';
+    this.o.show(this.word(best.trigger, nightMode), kind, SHOW_MS[kind], best.trigger.kind);
   }
 
   /** Shown straight away (used for "everyone is in the same game"). */
-  async announceNow(key: string, trigger: Trigger, nightMode: boolean): Promise<void> {
+  announceNow(key: string, trigger: Trigger, nightMode: boolean): void {
     if (this.used.has(key)) return;
     this.used.add(key);
     this.lastShown = this.now();
-    this.o.show(await this.word(trigger, nightMode), 'major', SHOW_MS.major, trigger.kind);
+    this.o.show(this.word(trigger, nightMode), 'major', SHOW_MS.major, trigger.kind);
   }
 
-  private async word(trigger: Trigger, nightMode: boolean): Promise<string> {
+  private word(trigger: Trigger, nightMode: boolean): string {
     const config = this.o.store.get('announcements');
     const seed = Math.floor(this.random() * 1000);
-    const template = nightMode ? nightLine(trigger, seed, config.night_mode_lines) : config.humour ? humourLine(trigger, seed) : factLine(trigger);
-    const ai = this.o.ai();
-    if (!ai) return template;
-    const rewritten = await ai.rewrite(template, nightMode ? 'night' : config.humour ? 'funny' : 'factual');
-    if (!rewritten) log.info('AI wording unavailable; using the template line.');
-    return rewritten ?? template;
+    return nightMode ? nightLine(trigger, seed, config.night_mode_lines) : config.humour ? humourLine(trigger, seed) : factLine(trigger);
   }
 }

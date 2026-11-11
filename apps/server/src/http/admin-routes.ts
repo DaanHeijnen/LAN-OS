@@ -13,7 +13,7 @@ import { fromHostPc, type AppContext, type Helpers } from './context.ts';
 
 const SECRET_LABELS = {
   ADMIN_PASSWORD: 'Admin password', STEAM_API_KEY: 'Steam API key', SPOTIFY_CLIENT_ID: 'Spotify Client ID',
-  DISCORD_BOT_TOKEN: 'Discord bot token', AI_API_KEY: 'AI key',
+  DISCORD_BOT_TOKEN: 'Discord bot token',
 } as const;
 
 export function adminRoutes(app: FastifyInstance, c: AppContext, h: Helpers): void {

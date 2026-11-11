@@ -104,7 +104,7 @@ Every game session, song, vote and activity is saved. LAN Wrapped turns it into 
 - **Players sign in with Steam.** They pick their name, or add themselves, and stay signed in all weekend.
 - **Steam works without an API key.** It reads public Steam profiles. An optional key adds Away status, joining lobbies and the Shared Game Finder.
 - **Spotify:** LAN Radio plays through the host's Spotify Premium account, connected with one button on the setup page.
-- **Optional:** an Anthropic API key, so Claude words the announcements, and a Discord bot for highlights.
+- **Optional:** a Discord bot for highlights.
 
 ## Built to run unattended for 72 hours
 

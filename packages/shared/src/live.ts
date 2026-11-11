@@ -98,7 +98,6 @@ export interface SetupInfo {
   spotifyConnected: boolean;
   spotifyAccount: string | null;
   spotifyRedirectUri: string;
-  aiKey: boolean;
   discordToken: boolean;
   hostUrl: string;
   /** The general sign-in address players can open. */
@@ -291,7 +290,7 @@ export const safetySchema = z.strictObject({
 });
 
 export const setupSecretSchema = z.strictObject({
-  name: z.enum(['ADMIN_PASSWORD', 'STEAM_API_KEY', 'SPOTIFY_CLIENT_ID', 'DISCORD_BOT_TOKEN', 'AI_API_KEY']),
+  name: z.enum(['ADMIN_PASSWORD', 'STEAM_API_KEY', 'SPOTIFY_CLIENT_ID', 'DISCORD_BOT_TOKEN']),
   value: z.string().trim().max(300).nullable(),
 });
 export const eventSettingsSchema = z.strictObject({

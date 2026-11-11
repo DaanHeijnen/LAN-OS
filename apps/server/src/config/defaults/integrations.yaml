@@ -17,7 +17,3 @@ discord_enabled: false
 
 # The Discord channel to read highlights from: its ID between quotes (right-click the channel, Copy Channel ID), or "". Default: ""
 discord_channel_id: ""
-
-# Let an AI write the announcement lines (needs an AI key, set on the admin page). Without it, LAN OS uses
-# its own template lines. true or false. Default: true
-ai_enabled: true

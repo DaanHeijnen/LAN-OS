@@ -103,7 +103,6 @@ export const integrationsSchema = section({
   spotify_enabled: onOff(),
   discord_enabled: onOff(),
   discord_channel_id: text('must be a Discord channel ID between quotes, or ""'),
-  ai_enabled: onOff(),
 });
 
 export const serverSchema = section({

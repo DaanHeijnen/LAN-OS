@@ -1,5 +1,5 @@
 // Template lines for wall announcements: short and factual-sounding, based on real activity.
-// No persona or announcer character. Used directly, or as the facts an AI rewrites.
+// No persona or announcer character.
 import { formatDuration } from '@lan-os/shared';
 
 export type Trigger =

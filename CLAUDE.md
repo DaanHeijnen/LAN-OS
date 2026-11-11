@@ -13,7 +13,7 @@ apps/server/        Fastify server. Node 22 runs the .ts files directly (no buil
   src/presence/     Steam presence (Web API or public profiles) and session tracking
   src/radio/        LAN Radio: Spotify (PKCE), fair queue
   src/polls/        polls and activities
-  src/announce/     wall announcements (templates + optional AI)
+  src/announce/     wall announcements (template lines)
   src/history/      LAN Wrapped, HTML export, Shared Game Finder
   src/http/         routes: auth, player, admin/setup
   src/live/hub.ts   owns all services and builds each screen's snapshot

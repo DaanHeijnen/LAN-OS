@@ -41,7 +41,7 @@ Keep the spaces at the start of a line as they are. YAML uses them to know what 
 | `voting.yaml` | Polls: how long they stay open, how long votes can be changed, how many side polls |
 | `activities.yaml` | Group activities: which kinds exist, default player limits, when the reminder appears |
 | `announcements.yaml` | Wall announcements: humour on or off, how often, which events trigger them, night-mode lines |
-| `integrations.yaml` | Steam, Spotify, Discord and AI: on or off, and how often Steam is checked |
+| `integrations.yaml` | Steam, Spotify and Discord: on or off, and how often Steam is checked |
 | `tournament.yaml` | The tournament: points per place, bingo card size, suggested bingo time and points, how long a game result shows on the wall |
 | `server.yaml` | The host PC: port, local name, backups and how long logs are kept |
 | `theme.yaml` | Colours, text sizes and spacing of every screen. This is the approved design |

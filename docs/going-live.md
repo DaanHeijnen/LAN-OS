@@ -19,7 +19,7 @@ Work through the steps; each one turns green when it's done.
 | Who's coming | Remove the example players and, if you like, type your friends' names. Mark admins with ☆ |
 | Steam | Nothing to do: it works with public Steam profiles. A free Steam API key adds Away status, Join game for lobbies and the Shared Game Finder |
 | LAN Radio | Create a free Spotify developer app (the page shows exactly how), paste its Client ID, click **Connect Spotify**, and log in with the host's Spotify **Premium** account. Then open the Spotify app on the host PC and press play once |
-| Extras | Optional: an Anthropic API key for AI-written wall lines, and a Discord bot for highlights |
+| Extras | Optional: a Discord bot for highlights |
 
 ## 3. Players join
 

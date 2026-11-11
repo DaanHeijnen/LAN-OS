@@ -4,7 +4,6 @@ import {
   buildSteamLink, derivePresence, durationToSeconds, localDateTimeToDate,
   type LiveSnapshot, type PlayerCard, type PlayerConfig, type Screen, type ServiceHealth, type SteamSummary,
 } from '@lan-os/shared';
-import { AiWriter } from '../announce/ai.ts';
 import { Announcer } from '../announce/announcer.ts';
 import type { Accounts, Session } from '../auth/accounts.ts';
 import { Backups } from '../backup.ts';
@@ -79,7 +78,6 @@ export class LiveHub {
   private discordError: string | null = null;
   private steamSource: { key: string; source: PresenceSource } | null = null;
   private music: { key: string; service: MusicService } | null = null;
-  private ai: { key: string; writer: AiWriter } | null = null;
   readonly radio: Radio;
   readonly polls: Polls;
   readonly activities: Activities;
@@ -123,7 +121,7 @@ export class LiveHub {
           winner: poll.winner !== null ? poll.options[poll.winner]! : null,
           votes: poll.winner !== null ? poll.counts[poll.winner]! : 0,
         });
-        void this.announcer.tick(this.o.store.get('wall').night_mode);
+        this.announcer.tick(this.o.store.get('wall').night_mode);
       },
     });
     this.activities = new Activities({ ...common, nickname: id => this.nickname(id), submissionsBlocked: () => this.submissionsBlocked() });
@@ -135,7 +133,6 @@ export class LiveHub {
     });
     this.announcer = new Announcer({
       store: options.store,
-      ai: () => this.aiWriter(),
       show: (text, kind, ms, trigger) => this.showAnnouncement(text, kind, ms, trigger),
     });
     this.backups = new Backups(options.db, options.dataDir);
@@ -210,20 +207,13 @@ export class LiveHub {
     void this.radio.tick();
   }
 
-  private aiWriter(): AiWriter | null {
-    const key = this.o.secrets.get('AI_API_KEY');
-    if (!key || !this.o.store.get('integrations').ai_enabled) return null;
-    if (this.ai?.key !== key) this.ai = { key, writer: new AiWriter(key) };
-    return this.ai.writer;
-  }
-
   // --- Lifecycle ---
 
   start(): void {
     this.schedulePoll(0);
     this.radio.start();
     this.timers.push(setInterval(() => this.housekeeping(), HOUSEKEEPING_MS));
-    this.timers.push(setInterval(() => void this.announcer.tick(this.o.store.get('wall').night_mode), ANNOUNCER_EVERY_MS));
+    this.timers.push(setInterval(() => this.announcer.tick(this.o.store.get('wall').night_mode), ANNOUNCER_EVERY_MS));
     this.timers.push(setInterval(() => void this.refreshDiscord(), DISCORD_EVERY_MS));
     this.timers.push(setInterval(() => void this.refreshGameFinder(), GAME_FINDER_EVERY_MS));
     void this.refreshDiscord();
@@ -298,7 +288,6 @@ export class LiveHub {
   /** Called when a key was added on the admin page. */
   onSecretsChange(): void {
     this.steamSource = null;
-    this.ai = null;
     this.resetMusic();
     this.schedulePoll(0);
     void this.refreshDiscord();
@@ -368,7 +357,7 @@ export class LiveHub {
     const games = this.players.map(p => this.tracker.get(p.id)).map(s => (s?.status === 'in_game' ? s.game?.name ?? null : null));
     const shared = this.players.length > 1 && games.every(g => g !== null && g === games[0]) ? games[0]! : null;
     if (shared && shared !== this.everyoneInSameGame && this.o.store.get('announcements').trigger_all_same_game) {
-      void this.announcer.announceNow(`same:${shared}:${this.now().toISOString().slice(0, 13)}`,
+      this.announcer.announceNow(`same:${shared}:${this.now().toISOString().slice(0, 13)}`,
         { kind: 'all_same_game', game: shared, players: this.players.length }, this.o.store.get('wall').night_mode);
     }
     this.everyoneInSameGame = shared;
@@ -539,7 +528,6 @@ export class LiveHub {
           spotifyConnected: this.o.demo || this.o.spotifyTokens.connected,
           spotifyAccount: this.spotifyAccount,
           spotifyRedirectUri: `http://127.0.0.1:${this.o.port}/auth/spotify/callback`,
-          aiKey: this.o.secrets.get('AI_API_KEY') !== null,
           discordToken: this.o.secrets.get('DISCORD_BOT_TOKEN') !== null,
           hostUrl: this.o.baseUrl(),
           signInUrl: `${this.o.baseUrl()}/app/sign-in`,

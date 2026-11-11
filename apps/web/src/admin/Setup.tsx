@@ -174,10 +174,8 @@ function SetupSteps({ snapshot, admin, hostPc }: { snapshot: LiveSnapshot; admin
         </>}
       </Step>
 
-      <Step id="extras" n={6} title="Extras" done={s.aiKey || s.discordToken} optional>
-        <p className="muted"><b>AI-written announcements.</b> Without a key, the wall uses LAN OS's own lines, which work fine. With an Anthropic API key from <a className="text-button" href="https://console.anthropic.com" target="_blank" rel="noreferrer">console.anthropic.com</a>, Claude rewrites them.</p>
-        <SecretForm name="AI_API_KEY" label="Anthropic API key" placeholder="sk-ant-…" set={s.aiKey} />
-        <p className="muted" style={{ marginTop: 18 }}><b>Discord highlights.</b> Create a bot at <a className="text-button" href="https://discord.com/developers/applications" target="_blank" rel="noreferrer">discord.com/developers</a>, switch on "Message Content Intent", invite it to your server with "Read Message History", and paste its token. Then pick the channel on the admin page.</p>
+      <Step id="extras" n={6} title="Extras" done={s.discordToken} optional>
+        <p className="muted"><b>Discord highlights.</b> Create a bot at <a className="text-button" href="https://discord.com/developers/applications" target="_blank" rel="noreferrer">discord.com/developers</a>, switch on "Message Content Intent", invite it to your server with "Read Message History", and paste its token. Then pick the channel on the admin page.</p>
         <SecretForm name="DISCORD_BOT_TOKEN" label="Discord bot token" placeholder="Bot token" set={s.discordToken} />
       </Step>
 
