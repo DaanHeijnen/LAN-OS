@@ -255,6 +255,8 @@ function PollPanel({ snapshot, now }: { snapshot: LiveSnapshot; now: Date }) {
   }
   const max = Math.max(...poll.counts);
   const closed = poll.closedAt !== null;
+  const topFour = poll.options.map((_, i) => i)
+    .sort((a, b) => (poll.counts[b] ?? 0) - (poll.counts[a] ?? 0) || a - b).slice(0, 4);
   const minutesLeft = Math.max(0, Math.ceil((Date.parse(poll.closesAt) - now.getTime()) / 60_000));
   return (
     <div className="wall-card wall-poll">
@@ -264,7 +266,8 @@ function PollPanel({ snapshot, now }: { snapshot: LiveSnapshot; now: Date }) {
       </div>
       <h2 className="wall-poll-question">{poll.question}</h2>
       <div className="wall-poll-options">
-        {poll.options.slice(0, 4).map((o, i) => (
+        {/* Room for four rows: with typed-in answers, show the four with the most votes (in their original order). */}
+        {poll.options.map((o, i) => ({ o, i })).filter(({ i }) => topFour.includes(i)).map(({ o, i }) => (
           <div className={`wall-poll-row ${(closed ? i === poll.winner : poll.counts[i] === max && max > 0) ? 'leading' : ''}`} key={o}>
             <b>{o}</b>
             <span className="wall-poll-track"><i style={{ width: `${Math.round((100 * (poll.counts[i] ?? 0)) / Math.max(1, max))}%` }} /></span>

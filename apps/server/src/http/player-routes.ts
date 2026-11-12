@@ -3,6 +3,7 @@ import type { FastifyInstance } from 'fastify';
 import {
   activityActionSchema, dashboardLayoutSchema, myStatusSchema, newActivitySchema, newPollSchema, pinSchema,
   radioControlSchema, rsvpSchema, songRequestSchema, voteSchema, closePollSchema, bingoTickSchema, potEntrySchema,
+  writeInSchema,
 } from '@lan-os/shared';
 import { updatePlayer } from '../config/players.ts';
 import { buildRecap, lanSummaries } from '../history/recap.ts';
@@ -101,6 +102,13 @@ export function playerRoutes(app: FastifyInstance, c: AppContext, h: Helpers): v
     const input = playerId && h.body(voteSchema, request, reply);
     if (!playerId || !input) return;
     return h.attempt(reply, () => c.hub.polls.vote(playerId, id(request), input.option));
+  });
+
+  app.post('/api/polls/:id/answer', async (request, reply) => {
+    const playerId = h.requirePlayer(request, reply);
+    const input = playerId && h.body(writeInSchema, request, reply);
+    if (!playerId || !input) return;
+    return h.attempt(reply, () => c.hub.polls.writeIn(playerId, id(request), input.answer));
   });
 
   app.post('/api/polls/:id/close', async (request, reply) => {

@@ -74,6 +74,8 @@ export const votingSchema = section({
   default_poll_timer: duration('1m', '2h'),
   change_vote_window: duration('0s', '10m'),
   max_side_polls: wholeNumber(0, 5),
+  write_in_answers: onOff(),
+  max_poll_answers: wholeNumber(2, 20),
 });
 
 export const activitiesSchema = section({

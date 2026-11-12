@@ -355,3 +355,7 @@ html:has(body.admin-page){scroll-behavior:smooth}
   body.player-page:not(.mini) .player-col{min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:20px;padding-right:4px;scrollbar-width:thin}
   body.player-page:not(.mini) .player-col>*{flex-shrink:0}
 }
+
+/* Poll: a player's own typed answer, under the choices. */
+.poll-write-in{display:flex;gap:8px;margin:9px 0 4px}
+.poll-write-in input{flex:1;min-width:0}

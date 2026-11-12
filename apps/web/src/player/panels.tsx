@@ -165,12 +165,13 @@ export function SongModal({ onClose }: { onClose: () => void }) {
 
 function PollCard({ poll, me, now, timezone }: { poll: PollInfo; me: MeInfo; now: Date; timezone: string }) {
   const run = useAction();
+  const [answer, setAnswer] = useState('');
   const total = poll.counts.reduce((a, b) => a + b, 0);
   const max = Math.max(...poll.counts);
   const closed = poll.closedAt !== null;
   const locked = poll.myVote !== null && poll.changeUntil !== null && Date.parse(poll.changeUntil) < now.getTime();
   const status = closed ? (poll.tie ? 'Tie · the host decides' : poll.winner !== null ? `Winner: ${poll.options[poll.winner]}` : 'Closed without votes')
-    : poll.myVote === null ? 'Choose an option to vote.'
+    : poll.myVote === null ? (poll.writeIn ? 'Choose an option or type your own answer.' : 'Choose an option to vote.')
       : locked ? 'Your vote is locked in.' : `You voted. You can change it until ${clockTime(new Date(poll.changeUntil!), timezone)}.`;
   return (
     <div className="poll-body">
@@ -186,6 +187,16 @@ function PollCard({ poll, me, now, timezone }: { poll: PollInfo; me: MeInfo; now
           {!poll.anonymous && (poll.votersByOption[i]?.length ?? 0) > 0 && <small className="vote-voters">{poll.votersByOption[i]!.join(', ')}</small>}
         </button>
       ))}
+      {poll.writeIn && !locked && (
+        <form className="poll-write-in" onSubmit={e => {
+          e.preventDefault();
+          void run(() => api(`/api/polls/${poll.id}/answer`, 'POST', { answer }), 'Answer added.').then(ok => ok && setAnswer(''));
+        }}>
+          <input type="text" maxLength={60} value={answer} onChange={e => setAnswer(e.target.value)}
+            placeholder="Your own answer" aria-label={`Your own answer to: ${poll.question}`} />
+          <button className="button button-soft button-small" type="submit" disabled={!answer.trim()}><Icon name="plus" /> Add</button>
+        </form>
+      )}
       <div className="poll-bottom">
         <span>{status}</span>
         {!closed && poll.createdById === me.id && <button className="text-button" onClick={() => void run(() => api(`/api/polls/${poll.id}/close`, 'POST', {}), 'Poll closed.')}>Close poll</button>}

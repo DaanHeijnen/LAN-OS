@@ -38,7 +38,7 @@ Keep the spaces at the start of a line as they are. YAML uses them to know what 
 | `players.yaml` | Who can join, their nickname, Steam ID, and whether they are an admin. Also editable on the admin page |
 | `wall.yaml` | The projector: which panels show and in what order, night mode and brightness. Also editable on the admin page |
 | `music.yaml` | LAN Radio: taking turns, duplicate songs, the fallback playlist, skip votes, and who may pause, skip or change the volume |
-| `voting.yaml` | Polls: how long they stay open, how long votes can be changed, how many side polls |
+| `voting.yaml` | Polls: how long they stay open, how long votes can be changed, how many side polls, typed-in answers |
 | `activities.yaml` | Group activities: which kinds exist, default player limits, when the reminder appears |
 | `announcements.yaml` | Wall announcements: humour on or off, how often, which events trigger them, night-mode lines |
 | `integrations.yaml` | Steam, Spotify and Discord: on or off, and how often Steam is checked |

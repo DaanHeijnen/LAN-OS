@@ -154,6 +154,8 @@ export interface PollInfo {
   myVote: number | null;
   /** Until when the viewer can still change their vote. */
   changeUntil: string | null;
+  /** Players can still type their own answer: an open poll with choices, write-ins on, and room for more. */
+  writeIn: boolean;
 }
 
 export interface ActivityInfo {
@@ -276,8 +278,10 @@ export const newPollSchema = z.strictObject({
   anonymous: z.boolean(),
   minutes: z.number().int().min(1).max(240).nullable(),
 });
-export const voteSchema = z.strictObject({ option: z.number().int().min(0).max(5) });
-export const closePollSchema = z.strictObject({ winner: z.number().int().min(0).max(5).nullable().optional() });
+export const voteSchema = z.strictObject({ option: z.number().int().min(0).max(19) });
+/** A player's own typed answer; it becomes a new choice in the poll. */
+export const writeInSchema = z.strictObject({ answer: z.string().trim().min(1, 'Type an answer').max(60) });
+export const closePollSchema = z.strictObject({ winner: z.number().int().min(0).max(19).nullable().optional() });
 
 export const ACTIVITY_KIND_LABELS = { game: 'Group game', group_session: 'Group session', food_break: 'Food break', irl: 'IRL activity' } as const;
 export const newActivitySchema = z.strictObject({

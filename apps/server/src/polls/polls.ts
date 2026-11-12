@@ -98,6 +98,30 @@ export class Polls {
     this.closeIfDone(pollId);
   }
 
+  /** A player's own typed answer: added as a new choice (or matched to an existing one) and voted for. */
+  writeIn(playerId: string, pollId: number, answer: string): void {
+    const blocked = this.o.submissionsBlocked();
+    if (blocked) throw new PollError(blocked);
+    const poll = this.row(pollId);
+    if (poll.closed_at) throw new PollError('This poll has closed.');
+    const voting = this.o.store.get('voting');
+    if (poll.mode !== 'choice' || !voting.write_in_answers) throw new PollError('This poll does not take typed answers.');
+    const text = answer.trim();
+    if (!text) throw new PollError('Type an answer.');
+    const options = JSON.parse(poll.options) as string[];
+    const same = options.findIndex(o => o.toLowerCase() === text.toLowerCase());
+    if (same >= 0) return this.vote(playerId, pollId, same);
+    if (options.length >= voting.max_poll_answers) throw new PollError('This poll is full. Vote for one of the choices instead.');
+    // Check the vote lock before adding, so a locked player can't leave an empty answer behind.
+    const existing = this.votes(pollId).find(v => v.player_id === playerId);
+    const window = durationToSeconds(voting.change_vote_window) * 1000;
+    if (existing && this.now().getTime() - Date.parse(existing.first_voted_at) > window) {
+      throw new PollError('Your vote is locked in; the time to change it has passed.');
+    }
+    this.o.db.prepare('UPDATE polls SET options = ? WHERE id = ?').run(JSON.stringify([...options, text]), pollId);
+    this.vote(playerId, pollId, options.length);
+  }
+
   /** Closes a poll. For a tie, the host can pass the winning option. */
   close(pollId: number, by: { playerId: string | null; isAdmin: boolean }, winner?: number | null): void {
     const poll = this.row(pollId);
@@ -167,6 +191,8 @@ export class Polls {
       voted: votes.length, eligible: this.o.playerIds().length,
       myVote: mine?.option_index ?? null,
       changeUntil: mine && !poll.closed_at ? new Date(Date.parse(mine.first_voted_at) + window).toISOString() : null,
+      writeIn: !poll.closed_at && poll.mode === 'choice' && this.o.store.get('voting').write_in_answers
+        && options.length < this.o.store.get('voting').max_poll_answers,
     };
   }
 
