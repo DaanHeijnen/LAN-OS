@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { WALL_PANELS } from './config/schemas.ts';
 import type { Game, PresenceStatus, SteamLink } from './presence.ts';
 import type { GamePotInfo, TournamentInfo } from './tournament.ts';
+import type { VideoInfo } from './youtube.ts';
 
 export const SCREENS = ['wall', 'app', 'admin'] as const;
 export type Screen = (typeof SCREENS)[number];
@@ -201,6 +202,8 @@ export interface LiveSnapshot {
   tournament: TournamentInfo | null;
   /** Games players would like to play; a few are drawn into the tournament lineup. */
   gamePot: GamePotInfo;
+  /** YouTube videos players shared: the one on the projector now and the queue. */
+  videos: VideoInfo;
   me?: MeInfo;
   admin?: AdminInfo;
 }

@@ -57,6 +57,9 @@ export const wallSchema = section({
   brightness: wholeNumber(20, 100),
   scale: wholeNumber(60, 100),
   up_next_songs: wholeNumber(0, 5),
+  youtube_videos: onOff(),
+  youtube_max_length: duration('30s', '1h'),
+  youtube_queue_per_player: wholeNumber(1, 5),
 });
 
 export const musicSchema = section({

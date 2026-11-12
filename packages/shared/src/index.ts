@@ -6,3 +6,4 @@ export * from './presence.ts';
 export * from './live.ts';
 export * from './clock.ts';
 export * from './tournament.ts';
+export * from './youtube.ts';

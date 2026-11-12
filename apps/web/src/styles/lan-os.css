@@ -359,3 +359,13 @@ html:has(body.admin-page){scroll-behavior:smooth}
 /* Poll: a player's own typed answer, under the choices. */
 .poll-write-in{display:flex;gap:8px;margin:9px 0 4px}
 .poll-write-in input{flex:1;min-width:0}
+
+/* Wall: a shared YouTube video fills the whole projector, with a small caption in the top-left corner. */
+.wall-video{position:fixed;inset:0;z-index:90;background:#000;overflow:hidden}
+.wall-video-player,.wall-video-player>*{position:absolute;inset:0;width:100%;height:100%;border:0}
+.wall-video-caption{position:absolute;top:28px;left:32px;max-width:min(860px,60vw);display:flex;flex-direction:column;gap:4px;padding:16px 24px;border-radius:18px;
+  background:color-mix(in srgb,var(--surface-wall) 82%,transparent);border:1px solid var(--border-bright);color:var(--text-primary);pointer-events:none}
+.wall-video-caption strong{font-size:28px;line-height:1.25;font-weight:760;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wall-video-caption span{font-size:22px;color:var(--text-secondary)}
+.wall-video-tag{display:flex;align-items:center;gap:10px;font-weight:760;letter-spacing:.12em;color:var(--accent)!important}
+.wall-video-tag i{width:12px;height:12px;border-radius:50%;background:var(--status-in-game)}

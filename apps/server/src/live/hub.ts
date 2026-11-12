@@ -29,6 +29,7 @@ import { Radio } from '../radio/radio.ts';
 import { SpotifyApi, type SpotifyTokens } from '../radio/spotify.ts';
 import { GamePot } from '../tournament/pot.ts';
 import { Tournament } from '../tournament/tournament.ts';
+import { Videos } from '../videos/videos.ts';
 
 /** Bundle quick changes into one update for the screens. */
 const PUSH_DELAY_MS = 100;
@@ -85,6 +86,7 @@ export class LiveHub {
   readonly polls: Polls;
   readonly activities: Activities;
   readonly tournament: Tournament;
+  readonly videos: Videos;
   readonly pot: GamePot;
   readonly announcer: Announcer;
   readonly backups: Backups;
@@ -142,6 +144,10 @@ export class LiveHub {
       tournament: this.tournament,
       submissionsBlocked: () => this.submissionsBlocked(),
       announce: (text, ms) => this.showAnnouncement(text, 'major', ms, 'game_pot'),
+    });
+    this.videos = new Videos({
+      store: options.store, now: this.now, onChange: () => this.push(),
+      nickname: id => this.nickname(id), submissionsBlocked: () => this.submissionsBlocked(),
     });
     this.announcer = new Announcer({
       store: options.store,
@@ -245,6 +251,7 @@ export class LiveHub {
     this.polls.tick();
     this.activities.tick();
     this.tournament.housekeeping();
+    this.videos.tick();
     const lead = durationToSeconds(this.o.store.get('activities').reminder_lead_time) * 1000;
     for (const a of this.activities.list(null)) {
       const until = Date.parse(a.startsAt) - this.now().getTime();
@@ -515,6 +522,7 @@ export class LiveHub {
       gamePot: this.pot.info({
         playerId: viewer, admin: screen === 'admin' && this.isAdmin(session), hideNames: forWall && runtime.hide_public,
       }),
+      videos: this.videos.info(),
     };
     // Anonymous or hidden details never reach the wall.
     if (forWall && runtime.hide_public) snapshot.polls = snapshot.polls.map(p => ({ ...p, votersByOption: p.options.map(() => []) }));

@@ -18,3 +18,14 @@ scale: 100
 # How many songs from the queue the music panel lists under the current song, with their album cover and who
 # added them. 0 hides the list. Allowed: 0 to 5. Default: 3
 up_next_songs: 3
+
+# Whether players can share a YouTube link from their dashboard. The video takes over the whole projector
+# while it plays (without sound: the wall stays silent), then the wall comes back. Admins can skip or stop it.
+# true or false. Default: true
+youtube_videos: true
+
+# The longest a shared video plays before the wall moves on. A time from "30s" to "1h". Default: "10m"
+youtube_max_length: "10m"
+
+# How many videos one player can have waiting in the queue at once. A whole number from 1 to 5. Default: 1
+youtube_queue_per_player: 1

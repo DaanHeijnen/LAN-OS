@@ -3,7 +3,7 @@ import type { FastifyInstance } from 'fastify';
 import {
   activityActionSchema, dashboardLayoutSchema, myStatusSchema, newActivitySchema, newPollSchema, pinSchema,
   radioControlSchema, rsvpSchema, songRequestSchema, voteSchema, closePollSchema, bingoTickSchema, potEntrySchema,
-  writeInSchema,
+  writeInSchema, shareVideoSchema, wallVideoReportSchema,
 } from '@lan-os/shared';
 import { updatePlayer } from '../config/players.ts';
 import { buildRecap, lanSummaries } from '../history/recap.ts';
@@ -117,6 +117,29 @@ export function playerRoutes(app: FastifyInstance, c: AppContext, h: Helpers): v
     if (!input) return;
     if (!session) return reply.code(401).send({ error: 'Sign in first.' });
     return h.attempt(reply, () => c.hub.polls.close(id(request), { playerId: session.playerId, isAdmin: c.hub.isAdmin(session) }, input.winner));
+  });
+
+  // --- YouTube videos on the projector ---
+
+  app.post('/api/videos', async (request, reply) => {
+    const playerId = h.requirePlayer(request, reply);
+    const input = playerId && h.body(shareVideoSchema, request, reply);
+    if (!playerId || !input) return;
+    return h.attempt(reply, async () => ({ video: await c.hub.videos.share(playerId, input.link) }));
+  });
+
+  app.delete('/api/videos/:id', async (request, reply) => {
+    const session = h.sessionOf(request);
+    if (!session) return reply.code(401).send({ error: 'Sign in first.' });
+    return h.attempt(reply, () => c.hub.videos.remove(id(request), { playerId: session.playerId, isAdmin: c.hub.isAdmin(session) }));
+  });
+
+  // The projector has no sign-in, so it reports here. It needs the current play id, which only changes per video.
+  app.post('/api/wall/video', async (request, reply) => {
+    const input = h.body(wallVideoReportSchema, request, reply);
+    if (!input) return;
+    c.hub.videos.report(input.playId, input.event, input.durationSeconds);
+    return reply.send({ ok: true });
   });
 
   // --- Activities ---

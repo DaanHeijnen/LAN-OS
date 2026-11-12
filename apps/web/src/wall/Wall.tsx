@@ -9,6 +9,7 @@ import { useLive, useNow } from '../live.ts';
 import { groupRoster } from '../roster.ts';
 import { AlbumArt, livePosition } from '../player/panels.tsx';
 import { TournamentWall } from './TournamentWall.tsx';
+import { VideoTakeover } from './VideoTakeover.tsx';
 import '../styles/wall.css';
 import '../styles/lan-os.css';
 
@@ -28,6 +29,8 @@ export default function Wall() {
   }, [snapshot?.wall.nightMode]);
 
   if (snapshot?.wall.blanked) return <div className="wall-blank" />;
+  // A shared YouTube video takes over the whole projector (not while the host has paused the wall).
+  if (snapshot?.videos.now && !snapshot.wall.paused) return <VideoTakeover video={snapshot.videos.now} queued={snapshot.videos.queue.length} />;
   // wall.yaml → scale below 100 makes the canvas larger than 1920×1080, so everything on it shows smaller.
   const size = { width: Math.round((WIDTH * 100) / (snapshot?.wall.scale ?? 100)), height: Math.round((HEIGHT * 100) / (snapshot?.wall.scale ?? 100)) };
   return (

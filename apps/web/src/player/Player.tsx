@@ -12,6 +12,7 @@ import { Icon, type IconName } from '../ui/Icon.tsx';
 import { AllSystems, ModeSwitch, TopShell } from '../ui/Shell.tsx';
 import { ActivitiesPanel, ActivityModal, HistoryPanel, PollModal, PollsPanel, RadioPanel, SongModal, type Panel } from './panels.tsx';
 import { useSignedIn } from './SignIn.tsx';
+import { VideoModal } from './VideoModal.tsx';
 import { GamePotPanel } from './pot.tsx';
 import { TournamentPanel } from './tournament.tsx';
 import '../styles/app.css';
@@ -21,7 +22,7 @@ const DEFAULT_LAYOUT: DashboardLayout = { order: [...DASHBOARD_PANELS], hidden: 
 const PANEL_NAMES: Record<Panel, string> = { radio: 'LAN Radio', polls: 'Room decisions', activities: 'Coming up', history: 'Session history' };
 const SOUND_KEY = 'lanos-sound-cues';
 
-type ModalState = 'status' | 'customize' | 'song' | 'poll' | 'activity' | { player: string } | null;
+type ModalState = 'status' | 'customize' | 'song' | 'poll' | 'activity' | 'video' | { player: string } | null;
 
 const readSound = () => { try { return localStorage.getItem(SOUND_KEY) === 'on'; } catch { return false; } };
 
@@ -125,6 +126,7 @@ export default function Player() {
               <Icon name="plus" /> Request a song <Icon name="arrow-up-right" className="button-tail" /></button>
             <button className="button action-button action-poll" onClick={() => open('poll')}><Icon name="chart-no-axes-column" /> Start a poll</button>
             <button className="button action-button action-activity" onClick={() => open('activity')}><Icon name="calendar-plus" /> Propose activity</button>
+            {snapshot.videos.enabled && <button className="button button-soft" onClick={() => setModal('video')}><Icon name="tv" /> Share a video</button>}
             <button className="button button-quiet" onClick={() => setModal('status')}><Icon name="scan-face" /> Your status <Icon name="chevron-down" /></button>
             {/* LAN Wrapped is a surprise: players see it once an admin publishes it; admins can preview it. */}
             {me.isAdmin && !snapshot.recapPublished && <a className="button button-quiet" href="/recap"><Icon name="history" /> LAN Wrapped (preview)</a>}
@@ -157,6 +159,7 @@ export default function Player() {
       {modal === 'song' && <SongModal onClose={() => setModal(null)} />}
       {modal === 'poll' && <PollModal onClose={() => setModal(null)} />}
       {modal === 'activity' && <ActivityModal onClose={() => setModal(null)} />}
+      {modal === 'video' && <VideoModal snapshot={snapshot} me={me} onClose={() => setModal(null)} />}
       {modal && typeof modal === 'object' && <PlayerDetails player={snapshot.players.find(p => p.id === modal.player)} me={me}
         now={now} onClose={() => setModal(null)} />}
     </>

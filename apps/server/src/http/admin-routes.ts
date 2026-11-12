@@ -2,7 +2,7 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { isSeq } from 'yaml';
 import {
-  activityActionSchema, closePollSchema, discordSettingsSchema, eventSettingsSchema, newPlayerSchema, newTournamentGameSchema,
+  activityActionSchema, adminVideoSchema, closePollSchema, discordSettingsSchema, eventSettingsSchema, newPlayerSchema, newTournamentGameSchema,
   newTournamentSchema, playerFieldsSchema, potReviewSchema, potStateSchema, radioControlSchema, safetySchema, setupSecretSchema, steamPauseSchema,
   tournamentGameChangeSchema, tournamentRoundSchema, tournamentStateSchema, wallMessageSchema, wallSettingsSchema,
 } from '@lan-os/shared';
@@ -176,6 +176,15 @@ export function adminRoutes(app: FastifyInstance, c: AppContext, h: Helpers): vo
     if (!input) return;
     return h.attempt(reply, () => c.hub.polls.close(Number(id(request)), { playerId: null, isAdmin: true }, input.winner));
   }));
+
+  app.post('/api/admin/videos', admin(async (request, reply) => {
+    const input = h.body(adminVideoSchema, request, reply);
+    if (!input) return;
+    return h.attempt(reply, () => (input.action === 'skip' ? c.hub.videos.skip() : c.hub.videos.stop()));
+  }));
+
+  app.delete('/api/admin/videos/:id', admin(async (request, reply) =>
+    h.attempt(reply, () => c.hub.videos.remove(Number(id(request)), { playerId: null, isAdmin: true }))));
 
   app.delete('/api/admin/polls/:id', admin(async (request, reply) => h.attempt(reply, () => c.hub.polls.remove(Number(id(request))))));
 

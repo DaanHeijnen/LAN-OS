@@ -90,7 +90,7 @@ export default function Admin({ path = location.pathname }: { path?: string }) {
   const waitingGames = snapshot.gamePot.entries.filter(e => e.state === 'waiting').length;
   const content: Record<SectionId, ReactNode> = {
     overview: <Metrics snapshot={snapshot} admin={admin} />,
-    projector: <ProjectorCard snapshot={snapshot} now={now} />,
+    projector: <><ProjectorCard snapshot={snapshot} now={now} /><VideosCard snapshot={snapshot} now={now} /></>,
     announcements: <MessageCard snapshot={snapshot} />,
     tournament: <TournamentCard snapshot={snapshot} now={now} />,
     'game-pot': <GamePotCard snapshot={snapshot} />,
@@ -593,6 +593,42 @@ function MusicCard({ snapshot, now }: { snapshot: LiveSnapshot; now: Date }) {
         </div>
       ))}
       <div className="system-footer"><Icon name="users-round" /> Who may pause, skip and change the volume is set in config/music.yaml.</div>
+    </section>
+  );
+}
+
+/** Shared YouTube videos: the one taking over the projector, and the queue. */
+function VideosCard({ snapshot, now }: { snapshot: LiveSnapshot; now: Date }) {
+  const run = useAction();
+  const { videos } = snapshot;
+  const playing = videos.now;
+  const left = playing ? Math.max(0, Math.round((Date.parse(playing.endsAt) - now.getTime()) / 1000)) : 0;
+  const control = (action: 'skip' | 'stop', success: string) => void run(() => api('/api/admin/videos', 'POST', { action }), success);
+  return (
+    <section className="card moderation-card" id="admin-videos">
+      <div className="section-header"><div><div className="section-overline">SHARED VIDEOS</div><h2>YouTube on the projector</h2></div>
+        <span className="tiny-pill">{videos.queue.length} QUEUED</span></div>
+      {!videos.enabled && <p className="muted text-sm">Players can't share videos right now (config/wall.yaml → youtube_videos).</p>}
+      <div className="moderation-now">
+        <div><strong>{playing?.title ?? 'No video playing'}</strong>
+          <small>{playing ? `Shared by ${playing.sharedBy} · ${mmss(left)} left${snapshot.wall.paused ? ' · hidden while the wall is paused' : ''}` : 'The wall shows the room as usual.'}</small></div>
+        <span className={`status-dot ${playing ? 'green' : 'amber'}`} />
+      </div>
+      <div className="moderation-actions">
+        <button type="button" className="button button-soft button-small" disabled={!playing}
+          onClick={() => control('skip', videos.queue.length ? 'Skipped to the next video.' : 'Video skipped.')}><Icon name="skip-forward" /> Skip</button>
+        <button type="button" className="button button-quiet button-small" disabled={!playing && videos.queue.length === 0}
+          onClick={() => control('stop', 'Videos stopped and queue cleared.')}><Icon name="x" /> Stop all</button>
+      </div>
+      {videos.queue.map(v => (
+        <div className="queue-row" key={v.id}>
+          <span className="queue-number">·</span>
+          <div><strong>{v.title}</strong><small>{v.sharedBy}</small></div>
+          <button type="button" className="queue-remove" title="Remove this video"
+            onClick={() => void run(() => api(`/api/admin/videos/${v.id}`, 'DELETE'), `${v.title} removed.`)}><Icon name="x" /></button>
+        </div>
+      ))}
+      <div className="system-footer"><Icon name="tv" /> Videos play muted, one at a time. Length and queue limits are set in config/wall.yaml.</div>
     </section>
   );
 }
