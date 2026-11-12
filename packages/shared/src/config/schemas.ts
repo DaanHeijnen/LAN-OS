@@ -71,6 +71,7 @@ export const musicSchema = section({
   who_can_pause: oneOf(PERMISSION_GROUPS),
   who_can_skip: oneOf(PERMISSION_GROUPS),
   who_can_change_volume: oneOf(PERMISSION_GROUPS),
+  song_ratings: onOff(),
 });
 
 export const votingSchema = section({
@@ -122,6 +123,24 @@ export const serverSchema = section({
   open_browser: onOff(),
   announce_hostname: onOff(),
   log_retention: duration('1d', '365d'),
+});
+
+export const questsSchema = section({
+  enabled: onOff(),
+  per_day: wholeNumber(1, 6),
+  quests: z.array(shortText(80), { error: 'must be a list of short lines, each starting with "- "' })
+    .min(1, 'needs at least one quest').max(200, 'can hold up to 200 quests'),
+});
+
+export const achievementsSchema = section({
+  enabled: onOff(),
+  wall_time: duration('0s', '1m'),
+  marathon_hours: wholeNumber(1, 12),
+  night_owl_hour: wholeNumber(1, 5),
+  early_bird_hour: wholeNumber(7, 11),
+  explorer_games: wholeNumber(2, 20),
+  crowd_pleaser_likes: wholeNumber(1, 10),
+  voter_polls: wholeNumber(1, 20),
 });
 
 export const tournamentSchema = section({
@@ -197,6 +216,8 @@ export const CONFIG_SCHEMAS = {
   server: serverSchema,
   tournament: tournamentSchema,
   theme: themeSchema,
+  quests: questsSchema,
+  achievements: achievementsSchema,
 } as const;
 
 export type ConfigName = keyof typeof CONFIG_SCHEMAS;

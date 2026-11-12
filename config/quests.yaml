@@ -1,0 +1,31 @@
+# LAN OS daily side quests. Every LAN day each player gets a few small, random challenges from the list below.
+# Players tick them off themselves on their dashboard (honour system). Each finished quest gets a moment
+# on the projector. A LAN day starts at the time in event.yaml (starts_at), like "DAY 2" on the wall.
+
+# Whether side quests are on. true or false. Default: true
+enabled: true
+
+# How many quests each player gets per LAN day. A whole number from 1 to 6. Default: 3
+per_day: 3
+
+# The quests LAN OS picks from. Each line starts with "- " and is at most 80 characters.
+# Add your own, remove the ones that don't fit your group. At least 1. Changes count from the next LAN day.
+quests:
+  - Play a game you have never played before
+  - Request a song from before the year 2000
+  - Win a round in a game you are bad at
+  - Teach someone the basics of a game
+  - Get four people into the same game
+  - Request a song that gets 3 thumbs up
+  - Play a co-op game with someone you haven't teamed up with yet
+  - Propose an activity and get at least 3 people to join
+  - Lose gracefully and congratulate the winner out loud
+  - Play 30 minutes of a game someone else picked
+  - Share a funny video on the projector
+  - Start a poll that everyone votes in
+  - Take a 10-minute walk outside
+  - Eat a real meal, not just snacks
+  - Drink a full glass of water three times today
+  - Give someone a compliment on their gameplay
+  - Play a game with the sound off for one round
+  - Clean up your desk area

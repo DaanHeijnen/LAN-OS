@@ -1,0 +1,33 @@
+# LAN OS live achievements. LAN OS spots these by itself from Steam, LAN Radio, polls and side quests,
+# and shows each new one on the projector for a moment. Each player can earn each achievement once per LAN.
+# Players hidden from the wall still earn them, but their moments don't show on the projector.
+
+# Whether achievements are on. true or false. Default: true
+enabled: true
+
+# How long a new achievement or finished side quest shows on the projector. "0s" means not on the projector.
+# A time from "0s" to "1m". Default: "12s"
+wall_time: "12s"
+
+# Marathon: this many hours in the same game without a break. A whole number from 1 to 12. Default: 3
+marathon_hours: 3
+
+# Night Owl: still in a game at this hour of the night or later (until 6:00). An hour from 1 to 5. Default: 4
+night_owl_hour: 4
+
+# Early Bird: in a game after 6:00 and before this hour in the morning. An hour from 7 to 11. Default: 8
+early_bird_hour: 8
+
+# Explorer: played this many different games during the LAN. A whole number from 2 to 20. Default: 5
+explorer_games: 5
+
+# Crowd Pleaser: a song you requested gets this many thumbs up. A whole number from 1 to 10. Default: 3
+crowd_pleaser_likes: 3
+
+# Voice of the People: voted in this many polls. A whole number from 1 to 20. Default: 5
+voter_polls: 5
+
+# The other achievements need no settings:
+#   Full House    everyone in the room is in the same game at once
+#   Opening Act   requested the first song LAN Radio played from a request this LAN
+#   Quest Master  finished all side quests of one LAN day

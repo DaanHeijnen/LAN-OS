@@ -134,10 +134,33 @@ function WallCanvas({ snapshot, now, connected, size }: { snapshot: LiveSnapshot
           <span className="announcement-bottom">LAN OS · THE ROOM</span>
         </div>
       )}
+      <WallMoments snapshot={snapshot} now={now} />
       {wall.paused && (
         <div className="wall-paused"><i>Ⅱ</i><h2>Wall feed paused</h2><p>Session data is still being recorded.</p></div>
       )}
       {!connected && <span className="wall-reconnecting">Reconnecting…</span>}
+    </div>
+  );
+}
+
+/** New achievements and finished side quests pop up in the corner for a few seconds (achievements.yaml → wall_time). */
+function WallMoments({ snapshot, now }: { snapshot: LiveSnapshot; now: Date }) {
+  const { wallSeconds, recent } = snapshot.achievements;
+  if (wallSeconds === 0) return null;
+  const showing = recent.filter(m => now.getTime() - Date.parse(m.at) < wallSeconds * 1000).slice(0, 3);
+  if (showing.length === 0) return null;
+  return (
+    <div className="wall-moments" aria-live="polite">
+      {showing.map(m => (
+        <div className={`wall-moment ${m.kind}`} key={m.key}>
+          <span className="wall-moment-emoji" aria-hidden="true">{m.emoji}</span>
+          <div>
+            <span className="wall-moment-tag">{m.kind === 'achievement' ? 'ACHIEVEMENT UNLOCKED' : 'SIDE QUEST DONE'}</span>
+            <strong>{m.player} · {m.kind === 'achievement' ? m.title : m.detail}</strong>
+            {m.kind === 'achievement' && <span className="wall-moment-detail">{m.detail}</span>}
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
@@ -215,6 +238,11 @@ function MusicPanel({ snapshot, now }: { snapshot: LiveSnapshot; now: Date }) {
             <div className="wall-song-title">{current.title}</div>
             <div className="wall-song-artist">{current.artist}</div>
             <div className="wall-song-requester">{current.isPlaying ? '▶ Playing' : 'Ⅱ Paused'} · {current.requester ? `Requested by ${current.requester}` : 'Room playlist'}</div>
+            {current.rating && (current.rating.up > 0 || current.rating.down > 0) && (
+              <div className="wall-song-thumbs" aria-label={`${current.rating.up} thumbs up, ${current.rating.down} thumbs down`}>
+                <span>👍 {current.rating.up}</span><span>👎 {current.rating.down}</span>
+              </div>
+            )}
           </div>
         </div>
         <div className="wall-progress"><i style={{ width: `${Math.round(progress * 100)}%` }} /></div>

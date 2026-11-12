@@ -7,3 +7,4 @@ export * from './live.ts';
 export * from './clock.ts';
 export * from './tournament.ts';
 export * from './youtube.ts';
+export * from './fun.ts';

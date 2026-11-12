@@ -30,6 +30,9 @@ import { SpotifyApi, type SpotifyTokens } from '../radio/spotify.ts';
 import { GamePot } from '../tournament/pot.ts';
 import { Tournament } from '../tournament/tournament.ts';
 import { Videos } from '../videos/videos.ts';
+import { Achievements } from '../fun/achievements.ts';
+import { Quests } from '../fun/quests.ts';
+import { SongRatings } from '../fun/ratings.ts';
 
 /** Bundle quick changes into one update for the screens. */
 const PUSH_DELAY_MS = 100;
@@ -87,6 +90,9 @@ export class LiveHub {
   readonly activities: Activities;
   readonly tournament: Tournament;
   readonly videos: Videos;
+  readonly ratings: SongRatings;
+  readonly quests: Quests;
+  readonly achievements: Achievements;
   readonly pot: GamePot;
   readonly announcer: Announcer;
   readonly backups: Backups;
@@ -144,6 +150,29 @@ export class LiveHub {
       tournament: this.tournament,
       submissionsBlocked: () => this.submissionsBlocked(),
       announce: (text, ms) => this.showAnnouncement(text, 'major', ms, 'game_pot'),
+    });
+    this.quests = new Quests({
+      ...common,
+      playerIds: () => this.players.map(p => p.id),
+      nickname: id => this.nickname(id),
+      submissionsBlocked: () => this.submissionsBlocked(),
+      onDone: (playerId, _quest, progress) => this.achievements.questDone(playerId, progress),
+    });
+    this.achievements = new Achievements({
+      ...common,
+      playerIds: () => this.players.map(p => p.id),
+      nickname: id => this.nickname(id),
+      isLive: () => this.quests.day() > 0,
+      liveState: id => {
+        const s = this.tracker.get(id);
+        return s && { status: s.status, game: s.game?.name ?? null, sessionStartedAt: s.session?.startedAt ?? null };
+      },
+    });
+    this.ratings = new SongRatings({
+      ...common,
+      currentPlay: () => this.radio.currentPlay(),
+      submissionsBlocked: () => this.submissionsBlocked(),
+      onThumbsUp: (play, ups) => this.achievements.thumbsUp(play.requesterId, play.title, ups),
     });
     this.videos = new Videos({
       store: options.store, now: this.now, onChange: () => this.push(),
@@ -252,6 +281,7 @@ export class LiveHub {
     this.activities.tick();
     this.tournament.housekeeping();
     this.videos.tick();
+    this.achievements.check();
     const lead = durationToSeconds(this.o.store.get('activities').reminder_lead_time) * 1000;
     for (const a of this.activities.list(null)) {
       const until = Date.parse(a.startsAt) - this.now().getTime();
@@ -384,6 +414,7 @@ export class LiveHub {
       this.announcer.announceNow(`same:${shared}:${this.now().toISOString().slice(0, 13)}`,
         { kind: 'all_same_game', game: shared, players: this.players.length }, this.o.store.get('wall').night_mode);
     }
+    if (shared) this.achievements.fullHouse(shared);
     this.everyoneInSameGame = shared;
   }
 
@@ -523,7 +554,12 @@ export class LiveHub {
         playerId: viewer, admin: screen === 'admin' && this.isAdmin(session), hideNames: forWall && runtime.hide_public,
       }),
       videos: this.videos.info(),
+      quests: this.quests.info(viewer),
+      achievements: this.achievements.info(viewer, {
+        forWall, hidePublic: runtime.hide_public, hidden: id => players.find(p => p.id === id)?.hiddenFromWall ?? false,
+      }),
     };
+    if (snapshot.radio.now) snapshot.radio.now.rating = this.ratings.info(viewer);
     // Anonymous or hidden details never reach the wall.
     if (forWall && runtime.hide_public) snapshot.polls = snapshot.polls.map(p => ({ ...p, votersByOption: p.options.map(() => []) }));
 

@@ -43,6 +43,9 @@ export class Radio {
   private playbackAt = new Date(0);
   private offlineReason: string | null = null;
   private lastTrackUri: string | null = null;
+  /** The song_played event of the song playing now: song ratings belong to it. */
+  private playEventId: number | null = null;
+  private playRequesterId: string | null = null;
   private skipVotes = new Map<string, Set<string>>();
   private fallbackStarted = false;
   private busy = false;
@@ -128,8 +131,9 @@ export class Radio {
       for (const playing of this.rows(['playing'])) this.setState(playing.id, 'played', 'ended_at');
       const ours = this.rows(['sent']).find(r => r.track_uri === current.uri);
       if (ours) this.setState(ours.id, 'playing', 'started_at');
-      appendEvent(this.o.db, lanId, 'song_played', ours?.player_id ?? null,
+      this.playEventId = appendEvent(this.o.db, lanId, 'song_played', ours?.player_id ?? null,
         { uri: current.uri, title: current.title, artist: current.artist, request_id: ours?.id ?? null }, this.now());
+      this.playRequesterId = ours?.player_id ?? null;
       this.lastTrackUri = current.uri;
       this.skipVotes.clear();
       this.fallbackStarted = false;
@@ -256,6 +260,13 @@ export class Radio {
     return this.offlineReason;
   }
 
+  /** The song playing right now, for song ratings. Null when nothing plays. */
+  currentPlay(): { eventId: number; requesterId: string | null; title: string } | null {
+    const current = this.playback?.track;
+    if (!current || this.playEventId === null || current.uri !== this.lastTrackUri) return null;
+    return { eventId: this.playEventId, requesterId: this.playRequesterId, title: current.title };
+  }
+
   // --- For the screens ---
 
   info(playerCount: number): RadioInfo {
@@ -276,6 +287,7 @@ export class Radio {
         title: current.title, artist: current.artist, albumArt: current.albumArt, durationMs: current.durationMs,
         positionMs: this.playback.positionMs, isPlaying: this.playback.isPlaying, at: this.playbackAt.toISOString(),
         requester: playingRow ? this.o.nickname(playingRow.player_id) : null, requesterId: playingRow?.player_id ?? null,
+        rating: null, // filled in per viewer by the hub
       } : null,
       queue: requested.map(r => ({
         id: r.id, title: r.title, artist: r.artist, albumArt: r.album_art, durationMs: r.duration_ms,

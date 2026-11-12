@@ -37,12 +37,14 @@ Keep the spaces at the start of a line as they are. YAML uses them to know what 
 | `event.yaml` | The LAN itself: its name, a short code for the stats, and when it starts and ends |
 | `players.yaml` | Who can join, their nickname, Steam ID, and whether they are an admin. Also editable on the admin page |
 | `wall.yaml` | The projector: which panels show and in what order, night mode, brightness and shared YouTube videos. Also editable on the admin page |
-| `music.yaml` | LAN Radio: taking turns, duplicate songs, the fallback playlist, skip votes, and who may pause, skip or change the volume |
+| `music.yaml` | LAN Radio: taking turns, duplicate songs, the fallback playlist, skip votes, who may pause, skip or change the volume, and song ratings |
 | `voting.yaml` | Polls: how long they stay open, how long votes can be changed, how many side polls, typed-in answers |
 | `activities.yaml` | Group activities: which kinds exist, default player limits, when the reminder appears |
 | `announcements.yaml` | Wall announcements: humour on or off, how often, which events trigger them, night-mode lines |
 | `integrations.yaml` | Steam, Spotify and Discord: on or off, and how often Steam is checked |
 | `tournament.yaml` | The tournament: points per place, bingo card size, suggested bingo time and points, how long a game result shows on the wall, the planned lineup (Game Gauntlet) and the game pot |
+| `quests.yaml` | Daily side quests: on or off, how many per day, and the list LAN OS picks from |
+| `achievements.yaml` | Live achievements: on or off, how long they show on the projector, and what each one takes |
 | `server.yaml` | The host PC: port, local name, backups and how long logs are kept |
 | `theme.yaml` | Colours, text sizes and spacing of every screen. This is the approved design |
 

@@ -15,6 +15,8 @@ apps/server/        Fastify server. Node 22 runs the .ts files directly (no buil
   src/polls/        polls and activities
   src/announce/     wall announcements (template lines)
   src/history/      LAN Wrapped, HTML export, Shared Game Finder
+  src/fun/          song ratings, daily side quests, live achievements
+  src/videos/       YouTube videos shared to the projector (queue in memory)
   src/http/         routes: auth, player, admin/setup
   src/live/hub.ts   owns all services and builds each screen's snapshot
   src/demo/         pretend Steam and Spotify, demo seed

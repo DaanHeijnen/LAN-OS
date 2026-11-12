@@ -13,6 +13,7 @@ import { AllSystems, ModeSwitch, TopShell } from '../ui/Shell.tsx';
 import { ActivitiesPanel, ActivityModal, HistoryPanel, PollModal, PollsPanel, RadioPanel, SongModal, type Panel } from './panels.tsx';
 import { useSignedIn } from './SignIn.tsx';
 import { VideoModal } from './VideoModal.tsx';
+import { AchievementsPanel, SideQuestsPanel } from './fun.tsx';
 import { GamePotPanel } from './pot.tsx';
 import { TournamentPanel } from './tournament.tsx';
 import '../styles/app.css';
@@ -138,6 +139,8 @@ export default function Player() {
             </div>
             <div className="player-primary player-col">
               <TournamentPanel snapshot={snapshot} me={me} now={now} />
+              <SideQuestsPanel snapshot={snapshot} me={me} />
+              <AchievementsPanel snapshot={snapshot} me={me} />
               <GamePotPanel snapshot={snapshot} me={me} />
               <GameFinder snapshot={snapshot} />
             </div>

@@ -3,7 +3,7 @@ import type { FastifyInstance } from 'fastify';
 import {
   activityActionSchema, dashboardLayoutSchema, myStatusSchema, newActivitySchema, newPollSchema, pinSchema,
   radioControlSchema, rsvpSchema, songRequestSchema, voteSchema, closePollSchema, bingoTickSchema, potEntrySchema,
-  writeInSchema, shareVideoSchema, wallVideoReportSchema,
+  writeInSchema, shareVideoSchema, wallVideoReportSchema, rateSongSchema, questDoneSchema,
 } from '@lan-os/shared';
 import { updatePlayer } from '../config/players.ts';
 import { buildRecap, lanSummaries } from '../history/recap.ts';
@@ -117,6 +117,22 @@ export function playerRoutes(app: FastifyInstance, c: AppContext, h: Helpers): v
     if (!input) return;
     if (!session) return reply.code(401).send({ error: 'Sign in first.' });
     return h.attempt(reply, () => c.hub.polls.close(id(request), { playerId: session.playerId, isAdmin: c.hub.isAdmin(session) }, input.winner));
+  });
+
+  // --- Song ratings and side quests ---
+
+  app.post('/api/radio/rate', async (request, reply) => {
+    const playerId = h.requirePlayer(request, reply);
+    const input = playerId && h.body(rateSongSchema, request, reply);
+    if (!playerId || !input) return;
+    return h.attempt(reply, () => c.hub.ratings.rate(playerId, input.rating));
+  });
+
+  app.post('/api/quests/:id', async (request, reply) => {
+    const playerId = h.requirePlayer(request, reply);
+    const input = playerId && h.body(questDoneSchema, request, reply);
+    if (!playerId || !input) return;
+    return h.attempt(reply, () => c.hub.quests.setDone(playerId, id(request), input.done));
   });
 
   // --- YouTube videos on the projector ---

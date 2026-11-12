@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
   ACTIVITY_KIND_LABELS, clockTime, formatDuration, shortDate,
-  type ActivityInfo, type LiveSnapshot, type MeInfo, type PollInfo, type RadioInfo,
+  type ActivityInfo, type LiveSnapshot, type MeInfo, type PollInfo, type RadioInfo, type SongRatingInfo,
 } from '@lan-os/shared';
 import { mmss } from '../format.ts';
 import { api } from '../live.ts';
@@ -38,6 +38,23 @@ export function AlbumArt({ url, label, className }: { url: string | null; label:
 
 // --- LAN Radio ---
 
+/** Thumbs up or down on the song that plays now. Tap your thumb again to take it back. */
+function SongThumbs({ rating, own }: { rating: SongRatingInfo; own: boolean }) {
+  const run = useAction();
+  const rate = (value: 1 | -1) => void run(() => api('/api/radio/rate', 'POST', { rating: rating.mine === value ? 0 : value }));
+  return (
+    <div className="song-thumbs" role="group" aria-label="Rate this song">
+      {([[1, '👍', 'Thumbs up', rating.up], [-1, '👎', 'Thumbs down', rating.down]] as const).map(([value, emoji, label, count]) => (
+        <button key={value} type="button" className={`song-thumb ${rating.mine === value ? 'selected' : ''}`} aria-pressed={rating.mine === value}
+          disabled={own} title={own ? 'You can\'t rate your own request' : label} onClick={() => rate(value)}>
+          <span aria-hidden="true">{emoji}</span> {count}<span className="sr-only"> {label}</span>
+        </button>
+      ))}
+      <span className="muted text-sm">{own ? 'Your request: let the room rate it.' : rating.mine ? 'Thanks for rating.' : 'Rate this song'}</span>
+    </div>
+  );
+}
+
 export function RadioPanel({ snapshot, me, now, collapsed, onToggle, open }: PanelProps) {
   const radio = snapshot.radio;
   const run = useAction();
@@ -70,6 +87,7 @@ export function RadioPanel({ snapshot, me, now, collapsed, onToggle, open }: Pan
           </div>
           <div className="progress-track"><div className="progress-fill" style={{ width: `${Math.round((100 * position) / Math.max(1, radio.now.durationMs))}%` }} /></div>
           <div className="progress-times"><span>{mmss(position / 1000)}</span><span>{mmss(radio.now.durationMs / 1000)}</span></div>
+          {radio.now.rating && <SongThumbs rating={radio.now.rating} own={radio.now.requesterId === me.id} />}
         </> : radio.status === 'ok' && <p className="muted text-sm">Nothing is playing. Open Spotify on the host PC and press play once.</p>}
 
         {radio.status === 'ok' && radio.now && (

@@ -5,6 +5,7 @@ import { WALL_PANELS } from './config/schemas.ts';
 import type { Game, PresenceStatus, SteamLink } from './presence.ts';
 import type { GamePotInfo, TournamentInfo } from './tournament.ts';
 import type { VideoInfo } from './youtube.ts';
+import type { AchievementsInfo, QuestInfo, SongRatingInfo } from './fun.ts';
 
 export const SCREENS = ['wall', 'app', 'admin'] as const;
 export type Screen = (typeof SCREENS)[number];
@@ -119,7 +120,11 @@ export interface RadioInfo {
   /** off = switched off in integrations.yaml; offline = not connected or unreachable. */
   status: 'ok' | 'offline' | 'off';
   message: string | null;
-  now: (RadioTrackInfo & { positionMs: number; isPlaying: boolean; at: string; requester: string | null; requesterId: string | null }) | null;
+  now: (RadioTrackInfo & {
+    positionMs: number; isPlaying: boolean; at: string; requester: string | null; requesterId: string | null;
+    /** Thumbs for this play; null when song ratings are off (music.yaml → song_ratings). */
+    rating: SongRatingInfo | null;
+  }) | null;
   /** In play order: the song already handed to Spotify first, then the fair queue. */
   queue: Array<RadioTrackInfo & { id: number; requester: string; requesterId: string; state: 'waiting' | 'sent' }>;
   requestsOpen: boolean;
@@ -204,6 +209,10 @@ export interface LiveSnapshot {
   gamePot: GamePotInfo;
   /** YouTube videos players shared: the one on the projector now and the queue. */
   videos: VideoInfo;
+  /** Today's side quests: the viewer's own and everyone's progress. */
+  quests: QuestInfo;
+  /** Achievements: new ones for the projector, and the viewer's own. */
+  achievements: AchievementsInfo;
   me?: MeInfo;
   admin?: AdminInfo;
 }
@@ -341,7 +350,13 @@ export interface RecapData {
     topArtists: Array<{ artist: string; count: number }>;
     perPlayer: Array<{ player: string; count: number }>;
     playlist: Array<{ title: string; artist: string; requester: string | null }>;
+    /** Songs with the most thumbs up minus thumbs down. */
+    topRated: Array<{ title: string; artist: string; requester: string | null; up: number; down: number }>;
   };
+  /** Every achievement earned in the range, in the order they were earned. */
+  achievements: Array<{ player: string; playerId: string; title: string; emoji: string; detail: string; at: string }>;
+  /** Side quests finished per player, most first. */
+  quests: Array<{ player: string; playerId: string; done: number }>;
   awards: Array<{ title: string; player: string; playerId: string; reason: string }>;
   tournaments: Array<{ name: string; standings: Array<{ player: string; place: number; points: number }> }>;
   timeline: Array<{ at: string; text: string }>;

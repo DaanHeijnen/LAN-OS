@@ -117,6 +117,19 @@ export default function Recap() {
             {recap.music.playlist.map((s, i) => <div className="recap-row" key={i}><b>{s.title}</b><span>{s.artist} · {s.requester}</span></div>)}</details>}
         </section>
 
+        {recap.music.topRated.length > 0 && <section className="card recap-card">
+          <div className="section-header"><div><div className="section-overline">CROWD FAVOURITES</div><h2>Best-rated songs</h2></div></div>
+          {recap.music.topRated.map(s => <div className="recap-row" key={s.title + s.artist}><b>{s.title}</b>
+            <span>{s.artist}{s.requester ? ` · ${s.requester}` : ''} · 👍 {s.up} 👎 {s.down}</span></div>)}
+        </section>}
+
+        <section className="card recap-card">
+          <div className="section-header"><div><div className="section-overline">ACHIEVEMENTS</div><h2>Badges earned</h2></div></div>
+          {recap.achievements.length === 0 && <p className="muted">Achievements show up here once people earn them.</p>}
+          {recap.achievements.map((a, i) => <div className="recap-row" key={i}><b>{a.emoji} {a.title}</b><span>{a.player}<small> · {a.detail} · {when(a.at, tz)}</small></span></div>)}
+          {recap.quests.length > 0 && <p className="muted text-sm">Side quests finished: {recap.quests.map(q => `${q.player} ${q.done}`).join(' · ')}</p>}
+        </section>
+
         <section className="card recap-card">
           <div className="section-header"><div><div className="section-overline">TIMELINE</div><h2>How it went</h2></div></div>
           {recap.timeline.length === 0 && <p className="muted">The big moments show up here.</p>}

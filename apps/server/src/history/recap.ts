@@ -1,6 +1,6 @@
 // LAN Wrapped: stats, awards and a timeline, computed from the event log.
 // Works for any LAN in the database and any time range (a night or the whole weekend).
-import type { LanSummary, RecapData, RecapSession } from '@lan-os/shared';
+import { ACHIEVEMENTS, type AchievementId, type LanSummary, type RecapData, type RecapSession } from '@lan-os/shared';
 import type { Db } from '../db/database.ts';
 import { listEvents, type StoredEvent } from '../db/events.ts';
 import { Tournament } from '../tournament/tournament.ts';
@@ -132,16 +132,33 @@ export function buildRecap(db: Db, o: RecapOptions): RecapData | null {
     return [...map.entries()].sort((a, b) => b[1] - a[1]);
   };
   const songKey = (e: StoredEvent) => `${e.data.title}\u0000${e.data.artist}`;
+  // Song ratings: thumbs per play, from the song_played event of that play.
+  const thumbs = db.prepare(`SELECT play_event_id AS id, COALESCE(SUM(rating = 1), 0) AS up, COALESCE(SUM(rating = -1), 0) AS down
+    FROM song_ratings WHERE lan_id = ? GROUP BY play_event_id`).all(o.lanId) as Array<{ id: number; up: number; down: number }>;
+  const thumbsByPlay = new Map(thumbs.map(t => [t.id, t]));
+  const ratedPlays = played.filter(e => thumbsByPlay.has(e.id)).map(e => ({ e, ...thumbsByPlay.get(e.id)! }));
   const music = {
     total: played.length,
+    topRated: ratedPlays.filter(p => p.up > 0).sort((a, b) => (b.up - b.down) - (a.up - a.down) || b.up - a.up).slice(0, 5)
+      .map(p => ({ title: String(p.e.data.title), artist: String(p.e.data.artist), requester: p.e.playerId ? name(p.e.playerId) : null, up: p.up, down: p.down })),
     topSongs: countBy(played, songKey).slice(0, 5).map(([k, count]) => { const [title, artist] = k.split('\u0000'); return { title: title!, artist: artist!, count }; }),
     topArtists: countBy(played.flatMap(e => String(e.data.artist ?? '').split(', ').filter(Boolean).map(a => ({ a }))), x => x.a).slice(0, 5).map(([artist, count]) => ({ artist, count })),
     perPlayer: countBy(requested.filter(e => e.playerId), e => e.playerId!).map(([id, count]) => ({ player: name(id), count })),
     playlist: played.filter(e => e.playerId).map(e => ({ title: String(e.data.title), artist: String(e.data.artist), requester: name(e.playerId!) })),
   };
 
+  // Side quests and achievements
+  const questRows = db.prepare('SELECT player_id, done_at FROM side_quests WHERE lan_id = ? AND done_at IS NOT NULL')
+    .all(o.lanId) as Array<{ player_id: string; done_at: string }>;
+  const questsDone = new Map<string, number>();
+  for (const q of questRows.filter(q => inRange(q.done_at))) questsDone.set(q.player_id, (questsDone.get(q.player_id) ?? 0) + 1);
+  const earned = (db.prepare('SELECT player_id, achievement_id, earned_at, detail FROM achievements WHERE lan_id = ? ORDER BY earned_at')
+    .all(o.lanId) as Array<{ player_id: string; achievement_id: AchievementId; earned_at: string; detail: string }>).filter(a => inRange(a.earned_at));
+  // Someone who only did side quests or earned badges still belongs in the recap.
+  for (const id of [...questsDone.keys(), ...earned.map(a => a.player_id)]) if (!playerIds.includes(id)) playerIds.push(id);
+
   // People
-  const night = (list: Interval[]) => { const h = hourlySeconds(list, tz); return h.slice(0, 6).reduce((a, b) => a + b, 0); };
+  const night =(list: Interval[]) => { const h = hourlySeconds(list, tz); return h.slice(0, 6).reduce((a, b) => a + b, 0); };
   const morning = (list: Interval[]) => { const h = hourlySeconds(list, tz); return h.slice(6, 11).reduce((a, b) => a + b, 0); };
   const together = groupSeconds(intervals);
   const players = playerIds.map(id => {
@@ -160,6 +177,8 @@ export function buildRecap(db: Db, o: RecapOptions): RecapData | null {
       favouriteHour: peak > 0 ? hourly.indexOf(peak) : null,
       award: null as string | null,
       night: night(mine), morning: morning(mine), together: together.get(id) ?? 0,
+      likes: ratedPlays.filter(p => p.e.playerId === id).reduce((t, p) => t + p.up - p.down, 0),
+      questsDone: questsDone.get(id) ?? 0,
       topShare: mine.length ? Math.max(...perGame.values()) / sum(mine) : 0,
     };
   });
@@ -175,6 +194,8 @@ export function buildRecap(db: Db, o: RecapOptions): RecapData | null {
     { title: 'The Early Bird', score: p => p.morning, reason: p => `${round1(p.morning / HOUR_S)}h played before 11:00`, min: HOUR_S },
     { title: 'The Organizer', score: p => p.activities, reason: p => `${p.activities} activities proposed`, min: 1 },
     { title: 'The Voice of the People', score: p => p.votes, reason: p => `${p.votes} votes cast`, min: 3 },
+    { title: 'The Hitmaker', score: p => p.likes, reason: p => `+${p.likes} thumbs on the songs they requested`, min: 3 },
+    { title: 'The Quester', score: p => p.questsDone, reason: p => `${p.questsDone} side quests finished`, min: 3 },
   ];
   const awards: RecapData['awards'] = [];
   const taken = new Set<string>();
@@ -222,7 +243,13 @@ export function buildRecap(db: Db, o: RecapOptions): RecapData | null {
     tournaments: Tournament.finalStandings(db, lan.id)
       .map(t => ({ name: t.name, standings: t.standings.map(s => ({ player: name(s.playerId), place: s.place, points: s.points })) })),
     timeline: timeline.slice(-40),
-    players: players.sort((a, b) => b.hours - a.hours).map(({ night: _n, morning: _m, together: _t, topShare: _s, ...p }) => p),
+    achievements: earned.map(a => ({
+      player: name(a.player_id), playerId: a.player_id, title: ACHIEVEMENTS[a.achievement_id]?.title ?? a.achievement_id,
+      emoji: ACHIEVEMENTS[a.achievement_id]?.emoji ?? '🏅', detail: a.detail, at: a.earned_at,
+    })),
+    quests: [...questsDone.entries()].sort((a, b) => b[1] - a[1]).map(([id, done]) => ({ player: name(id), playerId: id, done })),
+    players: players.sort((a, b) => b.hours - a.hours)
+      .map(({ night: _n, morning: _m, together: _t, topShare: _s, likes: _l, questsDone: _q, ...p }) => p),
   };
 }
 

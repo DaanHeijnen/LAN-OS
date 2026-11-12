@@ -26,3 +26,7 @@ who_can_skip: admins
 
 # Who may change the volume. everyone or admins. Default: admins
 who_can_change_volume: admins
+
+# Song ratings: players give the song that plays now a thumbs up or down (not on their own request).
+# The best-rated DJ shows up in LAN Wrapped. true or false. Default: true
+song_ratings: true

@@ -369,3 +369,49 @@ html:has(body.admin-page){scroll-behavior:smooth}
 .wall-video-caption span{font-size:22px;color:var(--text-secondary)}
 .wall-video-tag{display:flex;align-items:center;gap:10px;font-weight:760;letter-spacing:.12em;color:var(--accent)!important}
 .wall-video-tag i{width:12px;height:12px;border-radius:50%;background:var(--status-in-game)}
+
+/* LAN Radio: thumbs up or down on the song that plays now. */
+.song-thumbs{display:flex;align-items:center;gap:8px;margin:4px 0 12px;flex-wrap:wrap}
+.song-thumb{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--border-bright);background:var(--muted-bg);color:var(--text-primary);
+  border-radius:999px;padding:5px 12px;font-weight:720;font-size:12px}
+.song-thumb:hover:not(:disabled){border-color:var(--accent)}
+.song-thumb.selected{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 18%,transparent)}
+.wall-song-thumbs{display:flex;gap:20px;margin-top:8px;font-size:23px;font-weight:720;color:var(--text-secondary)}
+
+/* Dashboard: side quests and achievements. */
+.fun-body{padding:0 20px 20px}
+.quest-row{display:flex;align-items:center;gap:11px;border:1px solid var(--border);border-radius:9px;padding:10px 12px;margin:8px 0;cursor:pointer;font-size:13px}
+.quest-row input{width:18px;height:18px;accent-color:var(--accent);flex:none}
+.quest-row span:not(.quest-state){flex:1}
+.quest-row.done{border-color:color-mix(in srgb,var(--status-in-game) 55%,transparent);background:color-mix(in srgb,var(--status-in-game) 9%,transparent)}
+.quest-row.done span:not(.quest-state){color:var(--text-secondary);text-decoration:line-through}
+.quest-state{display:inline-flex;align-items:center;gap:4px;color:var(--status-in-game);font-size:11px;font-weight:720}
+.quest-state .icon{width:14px;height:14px}
+.fun-board{display:flex;flex-wrap:wrap;gap:6px 12px;margin-top:12px;font-size:12px;color:var(--text-secondary)}
+.fun-board strong{width:100%;color:var(--text-primary);font-size:11px;letter-spacing:.08em;text-transform:uppercase}
+.fun-board .me{color:var(--accent);font-weight:720}
+.badge-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px}
+.badge{display:flex;align-items:center;gap:10px;border:1px solid var(--border);border-radius:10px;padding:9px 11px;min-width:0}
+.badge>span:nth-child(2){flex:1;min-width:0}
+.badge b{display:block;font-size:12px}
+.badge small{display:block;font-size:11px;color:var(--text-quiet);line-height:1.35}
+.badge-emoji{font-size:22px;line-height:1}
+.badge.locked .badge-emoji{filter:grayscale(1);opacity:.45}
+.badge.earned{border-color:color-mix(in srgb,var(--accent) 55%,transparent);background:color-mix(in srgb,var(--accent) 9%,transparent)}
+.badge-state{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:720;color:var(--text-quiet);white-space:nowrap}
+.badge.earned .badge-state{color:var(--accent)}
+.badge-state .icon{width:12px;height:12px}
+
+/* Wall: new achievements and finished side quests pop up in the top-right corner. */
+.wall-moments{position:absolute;z-index:4;top:104px;right:36px;width:640px;display:flex;flex-direction:column;gap:14px;pointer-events:none}
+.wall-moment{display:flex;align-items:center;gap:20px;padding:20px 26px;border-radius:22px;background:var(--surface-card);
+  border:2px solid var(--accent);box-shadow:0 20px 60px rgba(0,0,0,.5);animation:wall-moment-in .4s ease-out}
+.wall-moment.quest{border-color:var(--status-in-game)}
+.wall-moment-emoji{font-size:52px;line-height:1}
+.wall-moment>div{display:flex;flex-direction:column;gap:4px;min-width:0}
+.wall-moment-tag{font-size:22px;font-weight:760;letter-spacing:.12em;color:var(--accent)}
+.wall-moment.quest .wall-moment-tag{color:var(--status-in-game)}
+.wall-moment strong{font-size:30px;line-height:1.25;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.wall-moment-detail{font-size:23px;color:var(--text-secondary)}
+@keyframes wall-moment-in{from{transform:translateX(40px);opacity:0}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){.wall-moment{animation:none}}
